@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090b12">
+  <title>GNAIL // Inbox Ops</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='9' fill='%23090B12'/%3E%3Cpath d='M6 13 20 22 34 13v17H6z' fill='none' stroke='%23f044a6' stroke-width='2.5'/%3E%3Cpath d='m23 5-9 16h7l-3 14 12-19h-7l4-11z' fill='%23f5d4e6'/%3E%3C/svg%3E">
+  <style>
+    *{box-sizing:border-box}html{color-scheme:dark}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% -20%,rgba(0,240,255,.13),transparent 48%),#090b12;color:#e8eef7;font:15px/1.45 "Courier New",monospace}body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.32;background-image:linear-gradient(rgba(0,240,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(0,240,255,.035) 1px,transparent 1px);background-size:36px 36px}.shell{width:min(1120px,100% - 36px);margin:0 auto;padding:28px 0 100px;position:relative}.topline{display:flex;justify-content:space-between;align-items:center;color:#92a1b8;font-size:11px;letter-spacing:2px;text-transform:uppercase}.brand{font:900 clamp(32px,6vw,58px)/1 Arial,sans-serif;letter-spacing:8px;color:#00f0ff;text-shadow:0 0 28px #00f0ff55;margin:23px 0 5px}.subtitle{margin:0 0 24px;color:#92a1b8;font-size:12px;letter-spacing:1.5px}.status{border:1px solid #00f0ff45;background:#10131d;padding:6px 9px;border-radius:4px;color:#00f0ff;font-size:10px;letter-spacing:1px}.status.demo{color:#f0e000;border-color:#f0e00055}.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-block:1px solid #22293a;padding:12px 0;margin-bottom:18px}.pill{border:1px solid #22293a;color:#92a1b8;background:#10131d;border-radius:4px;padding:7px 10px;font:inherit;font-size:11px;cursor:pointer}.pill.active,.pill:hover{border-color:#00f0ff;color:#00f0ff;background:#00f0ff0d}.spacer{flex:1}.count{color:#92a1b8;font-size:11px}.batch{display:grid;gap:13px}.group{overflow:hidden;border:1px solid #22293a;border-radius:9px;background:linear-gradient(180deg,#10131de8,#090b12f2);box-shadow:0 12px 35px #0004}.group-head{display:flex;align-items:center;gap:12px;padding:13px 15px;border-bottom:1px solid #22293a}.group-head h2{font:700 13px Arial,sans-serif;letter-spacing:2px;margin:0}.group.needs h2{color:#f0e000}.group.archive h2{color:#00f0ff}.group.delete h2{color:#ff2d6f}.group-count{font-size:11px;color:#92a1b8}.group-tools{margin-left:auto;display:flex;gap:7px;align-items:center}.action-link{border:0;background:transparent;color:#92a1b8;font:inherit;font-size:11px;cursor:pointer;padding:5px}.action-link:hover{color:#00f0ff}.action-link.danger:hover{color:#ff2d6f}.rows{padding:4px 10px 8px}.row{display:flex;align-items:center;min-height:42px;gap:9px;border-bottom:1px solid #22293a77;padding:5px 4px}.row:last-child{border-bottom:0}.row input[type=checkbox]{accent-color:#00f0ff;width:15px;height:15px;flex:0 0 auto}.subject{color:#e8eef7;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0;font-size:13px}.subject:hover{color:#00f0ff}.row-actions{display:flex;gap:2px;flex:0 0 auto}.row-actions .action-link{font-size:10px;padding:5px 6px}.row-actions select{max-width:104px;background:#0e1118;border:1px solid #22293a;color:#92a1b8;border-radius:3px;padding:4px;font:10px "Courier New",monospace}.empty{padding:15px;color:#526076;text-align:center;font-size:12px}.bottom-bar{position:fixed;z-index:3;bottom:0;left:0;right:0;padding:11px max(18px,calc((100vw - 1120px)/2));display:flex;align-items:center;gap:12px;background:#090b12ed;border-top:1px solid #00f0ff4a;backdrop-filter:blur(12px)}.queue-count{font-size:12px;color:#92a1b8;flex:1}.execute{background:#00f0ff;color:#071014;border:0;border-radius:4px;padding:11px 16px;font:900 12px Arial,sans-serif;letter-spacing:1.5px;cursor:pointer;box-shadow:0 0 18px #00f0ff3a}.execute:disabled{opacity:.35;cursor:not-allowed}.secondary{background:transparent;border:1px solid #364257;color:#92a1b8;border-radius:4px;padding:9px 12px;font:11px "Courier New",monospace;cursor:pointer}.secondary:hover{border-color:#00f0ff;color:#00f0ff}.login{position:fixed;inset:0;z-index:5;display:grid;place-items:center;background:#090b12}.login-card{width:min(370px,calc(100% - 36px));padding:30px;border:1px solid #00f0ff66;background:#10131d;border-radius:9px;box-shadow:0 0 40px #00f0ff18;text-align:center}.login-card h1{color:#00f0ff;letter-spacing:5px;font:900 30px Arial,sans-serif}.login-card input{width:100%;padding:12px;background:#090b12;border:1px solid #22293a;color:#00f0ff;text-align:center;font:20px "Courier New",monospace;letter-spacing:8px}.login-card button{margin-top:12px;width:100%}.toast{position:fixed;z-index:6;bottom:72px;left:50%;transform:translateX(-50%);padding:9px 14px;background:#10131d;border:1px solid #00f0ff;color:#e8eef7;border-radius:5px;font-size:12px;display:none}.toast.show{display:block}.queue-panel{position:fixed;z-index:4;right:16px;bottom:66px;width:min(430px,calc(100vw - 32px));max-height:60vh;overflow:auto;background:#10131d;border:1px solid #00f0ff66;border-radius:8px;box-shadow:0 10px 40px #000a;padding:12px;display:none}.queue-panel.open{display:block}.queue-head{display:flex;align-items:center;gap:8px;padding-bottom:8px;border-bottom:1px solid #22293a}.queue-head strong{font:700 12px Arial,sans-serif;letter-spacing:1px;color:#00f0ff}.queue-item{display:flex;gap:8px;align-items:center;padding:9px 2px;border-bottom:1px solid #22293a77}.queue-subject{font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}.queue-action{font-size:10px;color:#00f0ff}.queue-remove{color:#ff2d6f}.demo-note{margin:10px 0;padding:8px 10px;border:1px solid #f0e00055;border-radius:4px;color:#f0e000;font-size:10px;letter-spacing:.5px}.hidden{display:none!important}@media(max-width:650px){.shell{width:calc(100% - 22px);padding-top:18px}.topline{font-size:9px}.brand{letter-spacing:5px}.group-head{gap:8px;padding:11px}.group-head h2{font-size:11px}.group-tools{gap:2px}.group-tools .action-link{font-size:9px;padding:4px}.row{gap:6px;min-height:46px}.row-actions .action-link{font-size:9px;padding:5px 4px}.row-actions select{max-width:82px}.subject{font-size:12px}.bottom-bar{padding:9px 11px}.execute{padding:11px 10px;font-size:10px}}
+    /* Larger, easier-to-scan type and click targets throughout. */
+    body{font-size:17px;line-height:1.5}.topline{font-size:13px}.brand{font-size:clamp(38px,7vw,66px);margin-block:27px 8px}.subtitle{font-size:15px}.status{font-size:12px;padding:8px 11px}.controls{gap:10px;padding:15px 0;margin-bottom:22px}.pill{font-size:13px;padding:9px 12px}.count{font-size:13px}.group-head{padding:16px 18px;gap:14px}.group-head h2{font-size:16px}.group-count{font-size:13px}.group-tools{gap:9px}.action-link{font-size:13px;padding:7px}.rows{padding:5px 12px 10px}.row{min-height:54px;gap:10px;padding:7px 5px}.row input[type=checkbox]{width:18px;height:18px}.subject{font-size:16px}.row-actions{gap:4px}.row-actions .action-link{font-size:12px;padding:7px 8px}.row-actions select{max-width:128px;font-size:12px;padding:6px}.empty{padding:19px;font-size:14px}.bottom-bar{padding-top:14px;padding-bottom:14px;gap:15px}.queue-count{font-size:14px}.execute{font-size:14px;padding:14px 19px}.secondary{font-size:13px;padding:11px 14px}.gmail-controls .secondary{font-size:12px;padding:9px 11px}.queue-panel{padding:15px}.queue-head strong{font-size:14px}.queue-item{gap:10px;padding:11px 3px}.queue-subject{font-size:13px}.queue-action{font-size:12px}.queue-error{font-size:12px;max-width:155px}.demo-note{padding:10px 12px;font-size:12px}.toast{font-size:14px;padding:11px 16px}.login-card{padding:34px}.login-card h1{font-size:36px}.login-card input{font-size:24px;padding:14px}.login-card button{font-size:14px}
+    .selected-action{display:none}.selected-action:not(.hidden){display:inline-block}
+    @media(max-width:650px){body{font-size:16px}.shell{width:calc(100% - 22px);padding-top:18px}.topline{font-size:11px}.brand{font-size:42px;letter-spacing:5px;margin:20px 0 7px}.subtitle{font-size:13px}.controls{gap:6px;flex-wrap:wrap}.pill{font-size:11px;padding:8px 9px}.count{font-size:11px}.gmail-controls{margin-left:0}.gmail-controls .secondary{font-size:10px;padding:8px}.group-head{gap:8px;padding:11px}.group-head h2{font-size:13px}.group-tools{gap:3px;flex-wrap:wrap;justify-content:flex-end}.group-tools .action-link{font-size:10px;padding:5px}.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:5px 8px;min-height:unset;padding:9px 4px}.row input[type=checkbox]{grid-column:1;grid-row:1}.subject{grid-column:2;grid-row:1;font-size:15px}.row-actions{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px;padding-left:24px}.row-actions .action-link{font-size:11px;padding:6px 7px}.row-actions select{max-width:112px;font-size:11px;padding:6px}.bottom-bar{padding:9px 11px;gap:8px}.queue-count{font-size:11px}.execute{padding:11px 10px;font-size:11px}.secondary{font-size:11px;padding:8px 10px}.queue-panel{right:10px;bottom:62px}.queue-subject{font-size:12px}.queue-action{font-size:11px}}
+  </style>
+  <style>
+    .sender{flex:0 0 clamp(140px,19vw,225px);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#92a1b8;font-size:13px}.filter-suggestions{display:grid;gap:8px;margin:-6px 0 17px}.filter-suggestion{display:flex;align-items:center;gap:10px;border:1px solid #00f0ff45;background:#10131de8;border-radius:6px;padding:10px 13px}.filter-suggestion-text{flex:1;min-width:0;font-size:13px;color:#d6deea}.filter-suggestion-text strong{color:#00f0ff;font-weight:700}.filter-suggestion-count{color:#92a1b8;font-size:11px}.filter-suggestion .action-link{font-size:11px}.filter-suggestion .stage-filter{color:#00f0ff}.filter-suggestion .dismiss-filter{color:#718097}
+    @media(max-width:650px){.sender{grid-column:2;grid-row:1;max-width:100%;font-size:11px}.subject{grid-column:2;grid-row:2}.row input[type=checkbox]{grid-column:1;grid-row:1 / span 2;align-self:center}.row-actions{grid-row:3}.filter-suggestion{flex-wrap:wrap;gap:6px}.filter-suggestion-text{flex-basis:100%;font-size:12px}.filter-suggestion .action-link{font-size:10px;padding:5px}}
+  </style>
+  <style>
+    :root{--neon-pink:#f044a6;--pink-light:#ff8bc9;--neon-teal:#4fc8b4;--neon-violet:#9a78b8;--neon-coral:#dc7186}
+    body{background:radial-gradient(ellipse at 9% 6%,#f044a614,transparent 36%),radial-gradient(ellipse at 82% 94%,#9a78b80c,transparent 38%),#090910}
+    body:before{opacity:.23;background-image:linear-gradient(#9a78b80b 1px,transparent 1px),linear-gradient(90deg,#f044a608 1px,transparent 1px)}
+    .shell{width:min(1480px,calc(100% - 60px))}
+    .brand{font-style:italic;letter-spacing:5px;background:linear-gradient(100deg,#ff8bc9 0%,#f044a6 70%,#d66aa8 100%);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 0 12px #f044a633)}
+    .brand-lockup,.login-logo{display:flex;align-items:center;gap:13px}
+    .brand-lockup{margin:27px 0 8px}.brand-lockup .brand{margin:0}
+    .logo-mark{width:clamp(42px,5vw,58px);height:clamp(42px,5vw,58px);flex:0 0 auto;filter:drop-shadow(0 0 10px #f044a644)}
+    .login-logo{justify-content:center;font:italic 900 38px/1 Arial,sans-serif;letter-spacing:4px;background:linear-gradient(100deg,#ff8bc9,#f044a6 78%);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .login-card h1.login-logo{font:italic 900 38px/1 Arial,sans-serif;letter-spacing:4px;background:linear-gradient(100deg,#ff8bc9,#f044a6 78%);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .login-logo .logo-mark{width:42px;height:42px}
+    .pill.active,.pill:hover{border-color:var(--neon-pink);color:var(--pink-light);background:#f044a610}
+    .group.needs{border-color:#f044a644}.group.archive{border-color:#4fc8b444}.group.delete{border-color:#dc718644}
+    .group.needs h2{color:var(--neon-pink)}.group.archive h2{color:var(--neon-teal)}.group.delete h2{color:var(--neon-coral)}
+    .group.needs .group-head{background:linear-gradient(90deg,#f044a60d,transparent 75%)}.group.archive .group-head{background:linear-gradient(90deg,#4fc8b40c,transparent 75%)}.group.delete .group-head{background:linear-gradient(90deg,#dc71860d,transparent 75%)}
+    .row-actions [data-action="keep"]{color:var(--neon-pink)}.row-actions [data-action="archive"]{color:var(--neon-teal)}.row-actions [data-action="trash"]{color:var(--neon-coral)}.row-actions [data-action="unsubscribe"]{color:var(--neon-violet)}
+    .execute{background:var(--neon-pink);box-shadow:0 0 17px #f044a62c;color:#180b14}
+    .status:not(.demo){color:var(--neon-teal);border-color:#4fc8b455}.secondary:hover{border-color:var(--neon-pink);color:var(--pink-light)}
+    .bottom-bar{border-color:#f044a655}.queue-panel{border-color:#9a78b877}.filter-suggestion{border-color:#9a78b855;background:linear-gradient(105deg,#9a78b80d,#10131de8 68%)}
+    .filter-suggestion-text strong{color:var(--neon-pink)}
+    .bulk-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px;padding:12px 15px;border:1px solid #f044a655;border-left:4px solid var(--neon-pink);border-radius:6px;background:linear-gradient(100deg,#f044a60d,#9a78b80a 55%,#10131de8);box-shadow:0 0 18px #f044a60a}
+    .bulk-toolbar-label{color:#e5c5d7;font-size:13px;letter-spacing:.4px}.bulk-toolbar-label strong{color:var(--pink-light);font-size:15px}
+    .bulk-toolbar select{min-width:230px;max-width:min(420px,55vw);background:#0e1118;border:1px solid #9a78b855;color:#e8eef7;border-radius:4px;padding:9px 10px;font:12px "Courier New",monospace}
+    .bulk-toolbar .execute{padding:10px 14px;font-size:12px}.bulk-toolbar .secondary{font-size:11px;padding:9px 11px}
+    .group-search{flex:1;min-width:180px;max-width:340px;margin-left:12px;background:#0e1118;border:1px solid #9a78b855;border-radius:4px;padding:9px 11px;color:#f4eaf0;font:12px "Courier New",monospace;outline:none}.group-search::placeholder{color:#958594}.group-search:focus{border-color:var(--neon-pink);box-shadow:0 0 0 2px #f044a618}.row[hidden]{display:none!important}
+    .processing-overlay{position:fixed;z-index:100;inset:0;display:grid;place-items:center;padding:20px;background:rgba(4,3,10,.78);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}.processing-card{position:relative;width:min(510px,100%);overflow:hidden;padding:32px 34px 29px;border:1px solid #f044a688;border-radius:10px;background:radial-gradient(ellipse at 50% 0%,#f044a615,transparent 60%),linear-gradient(145deg,#14101b,#090910 74%);box-shadow:0 0 0 1px #f044a61c,0 24px 90px #000b,0 0 42px #f044a61c;text-align:center}.processing-card:before,.processing-card:after{content:"";position:absolute;width:26px;height:26px;border-color:var(--neon-pink);border-style:solid;pointer-events:none}.processing-card:before{top:9px;left:9px;border-width:1px 0 0 1px}.processing-card:after{right:9px;bottom:9px;border-width:0 1px 1px 0}.processing-top{display:flex;justify-content:space-between;gap:12px;color:#a99cab;font-size:10px;letter-spacing:1.8px;text-align:left}.processing-state{color:var(--pink-light)}.processing-emblem{position:relative;display:grid;place-items:center;width:88px;height:88px;margin:24px auto 17px}.processing-orbit{position:absolute;inset:5px;border:1px dashed #f044a688;border-radius:50%;animation:gnail-spin 4s linear infinite}.processing-orbit:before,.processing-orbit:after{content:"";position:absolute;width:5px;height:5px;border-radius:50%;background:var(--pink-light);box-shadow:0 0 9px #f044a6}.processing-orbit:before{top:9px;left:11px}.processing-orbit:after{right:8px;bottom:16px;background:#f5d4e6}.processing-ring{position:absolute;inset:15px;border:2px solid transparent;border-top-color:var(--neon-pink);border-right-color:#f5d4e655;border-radius:50%;animation:gnail-spin .95s linear infinite}.processing-core{width:14px;height:14px;border:2px solid #f5d4e6;background:var(--neon-pink);transform:rotate(45deg);box-shadow:0 0 16px #f044a688;animation:gnail-pulse 1.2s ease-in-out infinite alternate}@keyframes gnail-pulse{to{transform:rotate(45deg) scale(.7);opacity:.65}}.processing-title{margin:0;color:#fff3fa;font:800 20px/1.3 Arial,sans-serif;letter-spacing:1.8px}.processing-detail{max-width:410px;margin:10px auto 18px;color:#baadbb;font-size:12px;line-height:1.55}.processing-rail{height:3px;overflow:hidden;margin:0 auto 17px;background:#382333;border-radius:3px}.processing-rail span{display:block;width:38%;height:100%;background:linear-gradient(90deg,transparent,var(--neon-pink),#f5d4e6,transparent);box-shadow:0 0 9px #f044a6;animation:gnail-rail 1.5s ease-in-out infinite}@keyframes gnail-rail{from{transform:translateX(-120%)}to{transform:translateX(360%)}}.processing-error-code{margin:0 auto 15px;padding:9px 12px;border:1px solid #dc718655;border-radius:4px;background:#dc71860d;color:#ff9aae;font:11px/1.4 "Courier New",monospace;letter-spacing:.8px}.processing-card[data-state="error"]{border-color:#dc7186aa;box-shadow:0 24px 90px #000b,0 0 35px #dc718622}.processing-card[data-state="error"] .processing-orbit,.processing-card[data-state="error"] .processing-ring,.processing-card[data-state="error"] .processing-core,.processing-card[data-state="error"] .processing-rail{display:none}.processing-card[data-state="error"] .processing-emblem:after{content:"!";display:grid;place-items:center;width:52px;height:52px;border:1px solid #dc718688;border-radius:50%;color:#ff9aae;font:700 28px Arial,sans-serif;box-shadow:0 0 22px #dc718622}.processing-card .processing-close{margin-top:4px;padding:11px 18px;font-size:11px}.processing-card[data-state="error"] .processing-close{background:#dc7186;color:#19090e;box-shadow:0 0 16px #dc718633}body.processing{overflow:hidden}body.processing #groups,body.processing #bulk-toolbar,body.processing .controls,body.processing #filter-suggestions,body.processing #queue-panel{pointer-events:none;opacity:.75}body.processing #clear-queue,body.processing #execute-queue,body.processing #sync-gmail{pointer-events:none;opacity:.55}
+    .subject{font-size:14px}
+    @media(max-width:650px){.shell{width:calc(100% - 22px)}.brand-lockup{gap:9px;margin:20px 0 7px}.brand-lockup .brand{font-size:39px;letter-spacing:4px}.logo-mark{width:39px;height:39px}.login-logo{font-size:32px}.subject{font-size:13px}.bulk-toolbar{gap:7px;padding:9px}.bulk-toolbar-label{flex-basis:100%;font-size:11px}.bulk-toolbar select{flex:1;min-width:130px;max-width:100%;font-size:11px}.bulk-toolbar .execute,.bulk-toolbar .secondary{font-size:10px;padding:8px}.group-head{flex-wrap:wrap}.group-search{order:3;flex:1 1 100%;min-width:100%;max-width:100%;margin:2px 0 0}.group-tools{order:4;flex:1 1 100%;width:100%;margin-left:0;justify-content:flex-end}.processing-card{padding:26px 20px 22px}.processing-title{font-size:17px}.processing-detail{font-size:11px}}
+    @media(prefers-reduced-motion:reduce){.processing-orbit,.processing-ring,.processing-core,.processing-rail span{animation:none}}
+  </style>
+  <style>@keyframes gnail-spin{to{transform:rotate(360deg)}}.processing-rail[data-determinate="true"] span{width:var(--progress);transform:none;animation:none;background:linear-gradient(90deg,#f044a6,#ff8bc9)}.processing-detail{overflow-wrap:anywhere}</style>
+</head>
+<body>
+  <main class="shell hidden" id="app">
+    <div class="topline"><span>LOCAL MAIL OPS // <span id="mode">DEMO</span></span><span class="status demo" id="connection">SYNTHETIC DEMO</span></div>
+    <div class="brand-lockup"><svg class="logo-mark" viewBox="0 0 40 40" aria-hidden="true"><path d="M6 13 20 22 34 13v17H6z" fill="none" stroke="#f044a6" stroke-width="2.5"/><path d="m23 5-9 16h7l-3 14 12-19h-7l4-11z" fill="#f5d4e6"/></svg><h1 class="brand">GNAIL</h1></div>
+    <p class="subtitle">Nail those gmails to the wall!</p>
+    <div id="demo-note" class="demo-note">DEMO MODE — sample subjects only. Nothing here changes Gmail.</div>
+    <nav class="controls" aria-label="Triage groups"><button class="pill active" data-filter="ALL">ALL GROUPS</button><button class="pill" data-filter="NEEDS EYES">NEEDS EYES</button><button class="pill" data-filter="ARCHIVABLE">ARCHIVABLE</button><button class="pill" data-filter="DELETABLE">DELETABLE</button><span class="spacer"></span><span class="count" id="inbox-count"></span><div class="gmail-controls"><button class="secondary" id="connect-gmail">CONNECT GMAIL</button><button class="secondary" id="sync-gmail">FETCH 50</button></div><button class="secondary" id="review-queue">QUEUE <span id="queue-badge">0</span></button></nav>
+    <div id="bulk-toolbar" class="bulk-toolbar hidden"><span class="bulk-toolbar-label"><strong id="selected-count">0</strong> selected across groups</span><select id="bulk-label" aria-label="Apply label to selected messages"><option value="">APPLY LABEL TO SELECTED…</option></select><button class="execute" id="apply-bulk-label" disabled>LABEL SELECTED</button><button class="secondary" id="clear-selection">CLEAR SELECTION</button></div>
+    <div id="filter-suggestions" class="filter-suggestions"></div>
+    <div class="batch" id="groups"></div>
+  </main>
+  <aside class="queue-panel" id="queue-panel"><div class="queue-head"><strong>PENDING ACTIONS</strong><span class="spacer"></span><button class="action-link" id="close-queue">CLOSE</button></div><div id="queue-items"></div></aside>
+  <footer class="bottom-bar hidden" id="bottom-bar"><span class="queue-count" id="queue-summary">0 actions staged</span><button class="secondary" id="clear-queue">CLEAR</button><button class="execute" id="execute-queue" disabled>EXECUTE QUEUE</button></footer>
+  <div id="processing-overlay" class="processing-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="processing-title" aria-describedby="processing-detail">
+    <section id="processing-card" class="processing-card" data-state="busy">
+      <div class="processing-top"><span>GNAIL // LOCAL OPS</span><span id="processing-state" class="processing-state">IN PROGRESS</span></div>
+      <div class="processing-emblem" aria-hidden="true"><span class="processing-orbit"></span><span class="processing-ring"></span><span class="processing-core"></span></div>
+      <h2 id="processing-title" class="processing-title" tabindex="-1">PROCESSING QUEUE</h2>
+      <p id="processing-detail" class="processing-detail">Please wait while GNAIL completes this operation.</p>
+      <div id="processing-rail" class="processing-rail" aria-hidden="true"><span></span></div>
+      <p id="processing-error-code" class="processing-error-code hidden"></p>
+      <button id="processing-close" class="execute processing-close hidden" type="button">RETURN TO GNAIL</button>
+    </section>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <script>
+    let focusBeforeProcessing = null;
+    let progressPollTimer = null;
+    let state = { inbox: [], queue: [], categories: [], demo: true, labelNames: [], filterSuggestions: [] };
+    let activeFilter = 'ALL';
+    let needsEyesQuery = '';
+
+    async function api(path, options = {}) {
+      let response;
+      try {
+        response = await fetch(path, { ...options, headers: { 'Content-Type': 'application/json', ...options.headers } });
+      } catch (cause) {
+        const error = new Error(cause.message || 'Could not reach the local GNAIL server');
+        error.code = 'NETWORK_ERROR';
+        throw error;
+      }
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const error = new Error(body.error || `Request failed with HTTP ${response.status}`);
+        error.code = body.code || (response.status === 401 ? 'AUTH_REQUIRED' : `HTTP_${response.status}`);
+        error.status = response.status;
+        throw error;
+      }
+      return body;
+    }
+
+    function toast(message) {
+      const el = document.getElementById('toast');
+      el.textContent = message; el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2200);
+    }
+
+    function setActivity(message = '', detail = '') {
+      const overlay = document.getElementById('processing-overlay');
+      if (!message) {
+        closeProcessing();
+        return;
+      }
+      overlay.classList.remove('hidden');
+      focusBeforeProcessing = document.activeElement;
+      document.body.classList.add('processing');
+      document.getElementById('processing-card').dataset.state = 'busy';
+      document.getElementById('processing-state').textContent = 'IN PROGRESS';
+      document.getElementById('processing-title').textContent = message;
+      document.getElementById('processing-detail').textContent = detail || 'Please wait while GNAIL completes this operation.';
+      document.getElementById('processing-rail').classList.remove('hidden');
+      document.getElementById('processing-error-code').classList.add('hidden');
+      document.getElementById('processing-close').classList.add('hidden');
+      document.getElementById('clear-queue').disabled = true;
+      document.getElementById('review-queue').disabled = true;
+      document.getElementById('processing-title').focus();
+      startProgressPolling();
+    }
+
+    function stopProgressPolling() {
+      if (progressPollTimer) clearInterval(progressPollTimer);
+      progressPollTimer = null;
+    }
+
+    async function refreshProgress() {
+      try {
+        const progress = await api('/api/progress');
+        if (!progress.active) return;
+        const detail = document.getElementById('processing-detail');
+        detail.textContent = progress.total
+          ? `${progress.stage} · ${progress.completed}/${progress.total} settled`
+          : progress.stage;
+        const rail = document.getElementById('processing-rail');
+        if (progress.total > 0) {
+          rail.dataset.determinate = 'true';
+          rail.style.setProperty('--progress', `${Math.min(100, Math.round(progress.completed / progress.total * 100))}%`);
+        } else {
+          delete rail.dataset.determinate;
+          rail.style.removeProperty('--progress');
+        }
+      } catch {}
+    }
+
+    function startProgressPolling() {
+      stopProgressPolling();
+      refreshProgress();
+      progressPollTimer = setInterval(refreshProgress, 600);
+    }
+
+    function showProcessingError(title, error) {
+      stopProgressPolling();
+      const overlay = document.getElementById('processing-overlay');
+      const card = document.getElementById('processing-card');
+      const code = error.code || (error.status ? `HTTP_${error.status}` : 'LOCAL_ERROR');
+      overlay.classList.remove('hidden');
+      document.body.classList.add('processing');
+      card.dataset.state = 'error';
+      document.getElementById('processing-state').textContent = 'NEEDS ATTENTION';
+      document.getElementById('processing-title').textContent = title;
+      document.getElementById('processing-detail').textContent = error.message || 'The operation did not complete.';
+      const errorCode = document.getElementById('processing-error-code');
+      errorCode.textContent = `ERROR CODE // ${code}`;
+      errorCode.classList.remove('hidden');
+      document.getElementById('processing-rail').classList.add('hidden');
+      document.getElementById('processing-close').classList.remove('hidden');
+      document.getElementById('processing-overlay').setAttribute('role', 'alertdialog');
+      document.getElementById('processing-close').focus();
+    }
+
+    function closeProcessing() {
+      stopProgressPolling();
+      document.getElementById('processing-overlay').classList.add('hidden');
+      document.getElementById('processing-overlay').setAttribute('role', 'dialog');
+      document.body.classList.remove('processing');
+      document.getElementById('processing-card').dataset.state = 'busy';
+      document.getElementById('processing-close').classList.add('hidden');
+      document.getElementById('processing-error-code').classList.add('hidden');
+      document.getElementById('processing-rail').classList.remove('hidden');
+      document.getElementById('clear-queue').disabled = false;
+      document.getElementById('review-queue').disabled = false;
+      if (focusBeforeProcessing?.isConnected) focusBeforeProcessing.focus();
+      focusBeforeProcessing = null;
+    }
+
+    function showOperationError(title, error) {
+      if (error.code === 'AUTH_REQUIRED') { closeProcessing(); return; }
+      showProcessingError(title, error);
+    }
+
+    function esc(value) {
+      return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+    }
+
+    async function load() {
+      state = await api('/api/state');
+      document.getElementById('app').classList.remove('hidden');
+      document.getElementById('bottom-bar').classList.remove('hidden');
+      document.getElementById('mode').textContent = state.demo ? 'DEMO' : 'GMAIL';
+      document.getElementById('connection').textContent = state.demo ? 'SYNTHETIC DEMO' : 'GMAIL CONNECTED';
+      document.getElementById('connection').classList.toggle('demo', state.demo);
+      document.getElementById('demo-note').classList.toggle('hidden', !state.demo);
+      document.getElementById('connect-gmail').classList.toggle('hidden', state.gmailConnected);
+      document.getElementById('sync-gmail').classList.toggle('hidden', !state.gmailConnected);
+      render();
+    }
+
+    function actionLink(message, action, text, extra = {}) {
+      const attrs = Object.entries(extra).map(([key, value]) => `data-${key}="${esc(value)}"`).join(' ');
+      const danger = action === 'trash' || action === 'unsubscribe' ? ' danger' : '';
+      const title = action === 'needs_eyes' ? 'title="Local marker only: remains in Gmail and is skipped by future GNAIL fetches"' : '';
+      return `<button class="action-link${danger}" data-action="${action}" data-id="${esc(message.id)}" ${title} ${attrs}>${text}</button>`;
+    }
+
+    function updateSelectionToolbar() {
+      const selected = [...document.querySelectorAll('[data-check]:checked')].filter(box => !box.closest('.row')?.hidden);
+      const toolbar = document.getElementById('bulk-toolbar');
+      const select = document.getElementById('bulk-label');
+      toolbar.classList.toggle('hidden', selected.length === 0);
+      document.getElementById('selected-count').textContent = selected.length;
+      const selectedLabel = select.value;
+      select.innerHTML = `<option value="">APPLY LABEL TO SELECTED…</option>${(state.labelNames || []).map(label => `<option value="${esc(label)}">${esc(label)}</option>`).join('')}<option value="__new__">+ NEW LABEL</option>`;
+      if (selectedLabel && [...select.options].some(option => option.value === selectedLabel)) select.value = selectedLabel;
+      document.getElementById('apply-bulk-label').disabled = selected.length === 0 || !select.value;
+    }
+
+    function applyNeedsEyesSearch() {
+      const section = document.querySelector('#groups .group.needs');
+      if (!section) return;
+      const query = needsEyesQuery.trim().toLocaleLowerCase();
+      const terms = query.split(/\s+/).filter(Boolean);
+      const rows = [...section.querySelectorAll('.row')];
+      let visible = 0;
+      for (const row of rows) {
+        const searchable = `${row.querySelector('.sender')?.textContent || ''} ${row.querySelector('.subject')?.textContent || ''}`.toLocaleLowerCase();
+        const matches = terms.every(term => searchable.includes(term));
+        row.hidden = !matches;
+        if (!matches) row.querySelector('[data-check]').checked = false;
+        else visible += 1;
+      }
+      const count = section.querySelector('.group-count');
+      if (count) count.textContent = query ? `${visible}/${rows.length}` : String(rows.length);
+      const empty = section.querySelector('.search-empty');
+      if (empty) empty.classList.toggle('hidden', !(query && rows.length > 0 && visible === 0));
+      section.querySelector('.empty:not(.search-empty)')?.classList.toggle('hidden', rows.length > 0);
+      section.querySelectorAll('[data-search-bulk]').forEach(button => button.classList.toggle('hidden', !query));
+      section.querySelector('[data-default-bulk]')?.classList.toggle('hidden', Boolean(query));
+      const selectButton = section.querySelector('[data-select]');
+      if (selectButton) selectButton.textContent = query ? 'SELECT MATCHES' : 'SELECT';
+      const hasSelected = [...section.querySelectorAll('.row:not([hidden]) [data-check]')].some(box => box.checked);
+      section.querySelectorAll('.selected-action').forEach(button => button.classList.toggle('hidden', !hasSelected));
+    }
+
+    function render() {
+      const queuedIds = new Set(state.queue.map(item => item.inboxId || item.threadId || item.messageId).filter(Boolean));
+      const inbox = state.inbox.filter(message => !queuedIds.has(message.id) && (activeFilter === 'ALL' || message.category === activeFilter));
+      document.getElementById('inbox-count').textContent = `${inbox.length} SUBJECT${inbox.length === 1 ? '' : 'S'} // ${state.queue.length} STAGED`;
+      document.getElementById('queue-badge').textContent = state.queue.length;
+      document.getElementById('queue-summary').textContent = `${state.queue.length} ACTION${state.queue.length === 1 ? '' : 'S'} STAGED — GMAIL UNCHANGED`;
+      document.getElementById('execute-queue').disabled = state.queue.length === 0;
+      document.getElementById('filter-suggestions').innerHTML = (state.filterSuggestions || []).map(item => `<div class="filter-suggestion" data-filter-key="${esc(item.key)}"><div class="filter-suggestion-text">Remember <strong>${esc(item.senderName)}</strong> → <strong>${esc(item.label)}</strong> for future email?<span class="filter-suggestion-count"> &nbsp;${item.count} messages labeled</span></div><button class="action-link stage-filter" data-stage-filter="true" data-sender="${esc(item.sender)}" data-label="${esc(item.label)}">STAGE FILTER</button><button class="action-link dismiss-filter" data-dismiss-filter="true" data-sender="${esc(item.sender)}" data-label="${esc(item.label)}">NOT NOW</button></div>`).join('');
+      const groups = document.getElementById('groups');
+      const visibleGroups = activeFilter === 'ALL' ? state.categories : [activeFilter];
+      groups.innerHTML = visibleGroups.map(category => {
+        const rows = inbox.filter(message => message.category === category);
+        const style = category === 'NEEDS EYES' ? 'needs' : category === 'ARCHIVABLE' ? 'archive' : 'delete';
+        const bulkAction = category === 'NEEDS EYES' ? 'needs_eyes' : category === 'ARCHIVABLE' ? 'archive' : 'trash';
+        const bulkText = category === 'NEEDS EYES' ? 'NEEDS EYES ALL' : category === 'ARCHIVABLE' ? 'ARCHIVE ALL' : 'TRASH ALL';
+        const groupBulk = category === 'NEEDS EYES'
+          ? `<button class="action-link" data-default-bulk data-bulk="needs_eyes" data-category="${esc(category)}">NEEDS EYES ALL</button><button class="action-link search-bulk hidden" data-search-bulk data-bulk="needs_eyes" data-category="${esc(category)}">NEEDS EYES MATCHES</button><button class="action-link search-bulk hidden" data-search-bulk data-bulk="archive" data-category="${esc(category)}">ARCHIVE MATCHES</button><button class="action-link search-bulk hidden danger" data-search-bulk data-bulk="trash" data-category="${esc(category)}">TRASH MATCHES</button>`
+          : `<button class="action-link" data-bulk="${bulkAction}" data-category="${esc(category)}">${bulkText}</button>`;
+        const searchField = category === 'NEEDS EYES' ? `<input class="group-search" type="search" data-needs-eyes-search aria-label="Search Needs Eyes by sender or subject" placeholder="Search sender or subject…" value="${esc(needsEyesQuery)}">` : '';
+        return `<section class="group ${style}"><div class="group-head"><h2>${esc(category)}</h2><span class="group-count">${rows.length}</span>${searchField}<div class="group-tools">${groupBulk}<button class="action-link selected-action hidden" data-selected-action="needs_eyes" data-category="${esc(category)}">NEEDS EYES SELECTED</button><button class="action-link selected-action hidden" data-selected-action="archive" data-category="${esc(category)}">ARCHIVE SELECTED</button><button class="action-link selected-action hidden danger" data-selected-action="trash" data-category="${esc(category)}">TRASH SELECTED</button><button class="action-link" data-select="${esc(category)}">SELECT</button></div></div><div class="rows">${rows.length ? rows.map(message => `<div class="row" data-row="${esc(message.id)}"><input type="checkbox" aria-label="Select subject" data-check="${esc(message.id)}"><span class="sender" title="${esc(message.senderName || message.from || '')}">${esc(message.senderName || '')}</span><a class="subject" title="${esc(message.subject)}" href="${message.demo ? '#' : esc(message.webUrl || '#')}" ${message.demo ? 'data-demo-open="true"' : 'target="_blank" rel="noreferrer"'}>${esc(message.subject)}</a><div class="row-actions">${actionLink(message, 'needs_eyes', 'NEEDS EYES')}${actionLink(message, 'archive', 'ARCHIVE')}${actionLink(message, 'trash', 'TRASH')}${actionLink(message, 'unsubscribe', 'UNSUB')}<select aria-label="Move to triage group" data-move="${esc(message.id)}"><option value="">MOVE…</option>${state.categories.filter(item => item !== category).map(item => `<option value="${esc(item)}">${esc(item)}</option>`).join('')}</select><select aria-label="Apply Gmail label" data-label="${esc(message.id)}"><option value="">LABEL</option>${(state.labelNames || []).map(label => `<option value="${esc(label)}">${esc(label)}</option>`).join('')}<option value="__new__">+ NEW LABEL</option></select></div></div>`).join('') : '<div class="empty">NOTHING IN THIS GROUP</div>'}<div class="empty search-empty hidden">NO MATCHING MESSAGES</div></div></section>`;
+      }).join('');
+      applyNeedsEyesSearch();
+      groups.querySelectorAll('.group').forEach(section => {
+        const anyChecked = [...section.querySelectorAll('.row:not([hidden]) [data-check]')].some(box => box.checked);
+        section.querySelectorAll('.selected-action').forEach(button => button.classList.toggle('hidden', !anyChecked));
+      });
+      updateSelectionToolbar();
+      renderQueue();
+    }
+
+    function renderQueue() {
+      const list = document.getElementById('queue-items');
+      list.innerHTML = state.queue.length ? state.queue.map(item => `<div class="queue-item"><span class="queue-subject">${esc(item.action === 'create_filter' ? item.senderName : item.subject)}</span><span class="queue-action">${esc(item.action === 'create_filter' ? 'CREATE FILTER' : item.action === 'needs_eyes' || item.action === 'keep' ? 'NEEDS EYES' : item.action.toUpperCase())}${item.category ? ` → ${esc(item.category)}` : ''}${item.label ? ` · ${esc(item.label)}` : ''}</span>${item.error ? `<span class="queue-error" title="${esc(item.error)}">FAILED</span>` : ''}${item.error && item.action === 'unsubscribe' && item.webUrl ? `<a class="action-link" href="${esc(item.webUrl)}" target="_blank" rel="noopener noreferrer">OPEN GMAIL</a><button class="action-link" data-done="${esc(item.id)}">DONE</button>` : ''}<button class="action-link queue-remove" data-unstage="${esc(item.id)}">UNDO</button></div>`).join('') : '<div class="empty">QUEUE IS CLEAR — GMAIL IS UNTOUCHED</div>';
+    }
+
+    async function stage(ids, action, details = {}) {
+      if (!ids.length) return toast('Nothing selected');
+      const result = await api('/api/stage', { method: 'POST', body: JSON.stringify({ ids, action, ...details }) });
+      state.queue = result.queue;
+      render();
+      toast(result.updatedCount ? `${result.updatedCount} QUEUED ACTION${result.updatedCount === 1 ? '' : 'S'} UPDATED` : `${result.staged.length} ACTION${result.staged.length === 1 ? '' : 'S'} STAGED`);
+    }
+
+    document.getElementById('groups').addEventListener('click', async event => {
+      const actionButton = event.target.closest('[data-action]');
+      const bulkButton = event.target.closest('[data-bulk]');
+      const selectedAction = event.target.closest('[data-selected-action]');
+      const selectButton = event.target.closest('[data-select]');
+      const demoLink = event.target.closest('[data-demo-open]');
+      try {
+        if (demoLink) { event.preventDefault(); toast('Demo subject only — connect Gmail to open messages'); return; }
+        if (actionButton) {
+          const { id, action, category } = actionButton.dataset;
+          await stage([id], action, ['keep', 'move'].includes(action) ? { category } : {});
+        } else if (bulkButton) {
+          const section = bulkButton.closest('.group');
+          const ids = [...section.querySelectorAll('.row:not([hidden]) [data-check]')].map(box => box.dataset.check);
+          await stage(ids, bulkButton.dataset.bulk, {});
+        } else if (selectedAction) {
+          const section = selectedAction.closest('.group');
+          const ids = [...section.querySelectorAll('.row:not([hidden]) [data-check]:checked')].map(box => box.dataset.check);
+          await stage(ids, selectedAction.dataset.selectedAction);
+        } else if (selectButton) {
+          const section = selectButton.closest('.group');
+          const boxes = [...section.querySelectorAll('.row:not([hidden]) [data-check]')];
+          const shouldCheck = boxes.some(box => !box.checked);
+          boxes.forEach(box => box.checked = shouldCheck);
+          selectButton.textContent = shouldCheck ? 'DESELECT' : (needsEyesQuery.trim() && section.classList.contains('needs') ? 'SELECT MATCHES' : 'SELECT');
+          section.querySelectorAll('.selected-action').forEach(button => button.classList.toggle('hidden', !shouldCheck));
+          updateSelectionToolbar();
+        }
+      } catch (error) { toast(error.message); }
+    });
+
+    document.getElementById('groups').addEventListener('input', event => {
+      const search = event.target.closest('[data-needs-eyes-search]');
+      if (!search) return;
+      needsEyesQuery = search.value;
+      applyNeedsEyesSearch();
+      updateSelectionToolbar();
+      const selected = [...document.querySelectorAll('.row:not([hidden]) [data-check]:checked')].length;
+      document.getElementById('queue-summary').textContent = selected ? `${selected} SELECTED — CHOOSE A BULK ACTION` : `${state.queue.length} ACTION${state.queue.length === 1 ? '' : 'S'} STAGED — GMAIL UNCHANGED`;
+    });
+
+    document.getElementById('groups').addEventListener('change', async event => {
+      const checkbox = event.target.closest('[data-check]');
+      if (checkbox) {
+        const section = checkbox.closest('.group');
+        const anyChecked = [...section.querySelectorAll('.row:not([hidden]) [data-check]')].some(box => box.checked);
+        section.querySelectorAll('.selected-action').forEach(button => button.classList.toggle('hidden', !anyChecked));
+        const selected = [...document.querySelectorAll('.row:not([hidden]) [data-check]:checked')].map(box => box.dataset.check);
+        document.getElementById('queue-summary').textContent = selected.length ? `${selected.length} SELECTED — CHOOSE A GROUP ACTION` : `${state.queue.length} ACTION${state.queue.length === 1 ? '' : 'S'} STAGED — GMAIL UNCHANGED`;
+        updateSelectionToolbar();
+        return;
+      }
+      const select = event.target.closest('[data-label]');
+      if (select && select.value) {
+        let label = select.value;
+        if (label === '__new__') label = prompt('New Gmail label name:')?.trim();
+        select.value = '';
+        if (label) try { await stage([select.dataset.label], 'label', { label }); } catch (error) { toast(error.message); }
+      }
+      const move = event.target.closest('[data-move]');
+      if (move && move.value) {
+        const category = move.value;
+        move.value = '';
+        const action = category === 'NEEDS EYES' ? 'needs_eyes' : 'move';
+        try { await stage([move.dataset.move], action, action === 'move' ? { category } : {}); } catch (error) { toast(error.message); }
+      }
+    });
+
+    document.getElementById('bulk-label').addEventListener('change', event => {
+      const select = event.currentTarget;
+      if (select.value === '__new__') {
+        const label = prompt('New Gmail label name:')?.trim();
+        if (label) {
+          state.labelNames = [...new Set([...(state.labelNames || []), label])].sort((a, b) => a.localeCompare(b));
+          updateSelectionToolbar();
+          select.value = label;
+        } else select.value = '';
+      }
+      updateSelectionToolbar();
+    });
+    document.getElementById('apply-bulk-label').addEventListener('click', async () => {
+      const ids = [...document.querySelectorAll('[data-check]:checked')].map(box => box.dataset.check);
+      const label = document.getElementById('bulk-label').value;
+      if (!label || label === '__new__') return;
+      try { await stage(ids, 'label', { label }); } catch (error) { toast(error.message); }
+    });
+    document.getElementById('clear-selection').addEventListener('click', () => {
+      document.querySelectorAll('[data-check]:checked').forEach(box => box.checked = false);
+      document.querySelectorAll('.group [data-select]').forEach(button => button.textContent = 'SELECT');
+      document.querySelectorAll('.selected-action').forEach(button => button.classList.add('hidden'));
+      updateSelectionToolbar();
+    });
+
+    document.getElementById('filter-suggestions').addEventListener('click', async event => {
+      const stageFilter = event.target.closest('[data-stage-filter]');
+      const dismissFilter = event.target.closest('[data-dismiss-filter]');
+      const button = stageFilter || dismissFilter;
+      if (!button) return;
+      const payload = { sender: button.dataset.sender, label: button.dataset.label };
+      try {
+        if (stageFilter) {
+          const result = await api('/api/filter-suggestions/stage', { method: 'POST', body: JSON.stringify(payload) });
+          state.queue = result.queue; state.filterSuggestions = result.filterSuggestions;
+          render(); toast('FILTER STAGED — REVIEW AND EXECUTE QUEUE');
+        } else {
+          const result = await api('/api/filter-suggestions/dismiss', { method: 'POST', body: JSON.stringify(payload) });
+          state.filterSuggestions = result.filterSuggestions; render();
+        }
+      } catch (error) { toast(error.message); }
+    });
+
+    document.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => {
+      activeFilter = button.dataset.filter;
+      document.querySelectorAll('[data-filter]').forEach(item => item.classList.toggle('active', item === button));
+      render();
+    }));
+    document.getElementById('review-queue').addEventListener('click', () => document.getElementById('queue-panel').classList.toggle('open'));
+    document.getElementById('connect-gmail').addEventListener('click', async () => {
+      try { const result = await api('/api/gmail/connect'); if (result.connected) await load(); }
+      catch (error) { toast(error.message); }
+    });
+    document.getElementById('sync-gmail').addEventListener('click', async event => {
+      const button = event.currentTarget; button.disabled = true; button.textContent = 'FETCHING…';
+      setActivity('FETCHING + CLASSIFYING…', 'Scanning the next inbox batch and sorting it into your triage groups.');
+      let failed = false;
+      try {
+        const result = await api('/api/gmail/sync', { method: 'POST', body: '{}' });
+        state.inbox = result.inbox; state.labelNames = result.labels; state.filterSuggestions = result.filterSuggestions || []; render();
+        setActivity('');
+        toast(`${result.count} CLASSIFIED${result.hasMore ? ' — MORE AVAILABLE' : ''}`);
+      } catch (error) { failed = true; showOperationError('FETCH FAILED', error); }
+      finally { button.disabled = false; button.textContent = 'FETCH 50'; if (!failed) setActivity(''); }
+    });
+    document.getElementById('close-queue').addEventListener('click', () => document.getElementById('queue-panel').classList.remove('open'));
+    document.getElementById('queue-items').addEventListener('click', async event => {
+      const button = event.target.closest('[data-unstage]');
+      const done = event.target.closest('[data-done]');
+      if (done) {
+        try { state.queue = (await api(`/api/queue/${done.dataset.done}/done`, { method: 'POST', body: '{}' })).queue; render(); toast('MANUAL UNSUBSCRIBE RECORDED'); } catch (error) { toast(error.message); }
+        return;
+      }
+      if (!button) return;
+      try { state.queue = (await api(`/api/queue/${button.dataset.unstage}`, { method: 'DELETE' })).queue; render(); } catch (error) { toast(error.message); }
+    });
+    document.getElementById('clear-queue').addEventListener('click', async () => {
+      if (!state.queue.length) return;
+      try { state.queue = (await api('/api/queue', { method: 'DELETE' })).queue; render(); toast('QUEUE CLEARED — GMAIL UNCHANGED'); } catch (error) { toast(error.message); }
+    });
+    document.getElementById('execute-queue').addEventListener('click', async () => {
+      if (!state.queue.length) return;
+      const button = document.getElementById('execute-queue');
+      button.disabled = true;
+      setActivity('EXECUTING QUEUE…', `Applying ${state.queue.length} reviewed action(s).`);
+      let failed = false;
+      try {
+        const result = await api('/api/execute', { method: 'POST', body: '{}' });
+        state.inbox = result.inbox; state.queue = result.queue; if (Array.isArray(result.filterSuggestions)) state.filterSuggestions = result.filterSuggestions; render();
+        if (result.failed?.length) {
+          failed = true;
+          const details = result.failed.slice(0, 3).map(item => `${item.subject}: ${item.error}`).join(' | ');
+          showProcessingError('QUEUE NEEDS ATTENTION', { code: 'PARTIAL_FAILURE', message: `${result.failed.length} action(s) failed. ${details}` });
+        } else {
+          setActivity('');
+          toast(`${result.completed} ACTION${result.completed === 1 ? '' : 'S'} COMPLETED${result.demo ? ' — DEMO ONLY' : ''}`);
+        }
+      } catch (error) { failed = true; showOperationError('QUEUE FAILED', error); }
+      finally { button.disabled = state.queue.length === 0; if (!failed) setActivity(''); }
+    });
+    document.getElementById('processing-close').addEventListener('click', closeProcessing);
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && document.getElementById('processing-overlay').dataset.state === 'error') closeProcessing();
+    });
+    document.getElementById('demo-note').addEventListener('dblclick', async () => {
+      if (!confirm('Reset the synthetic demo messages?')) return;
+      try { const result = await api('/api/demo/reset', { method: 'POST', body: '{}' }); state.inbox = result.inbox; state.queue = result.queue; render(); } catch (error) { toast(error.message); }
+    });
+
+    load().catch(error => showProcessingError('GNAIL COULD NOT LOAD', error));
+  </script>
+</body>
+</html>
