@@ -34,6 +34,8 @@ Sort the pile quickly, keep the final say, and never let an agent click the butt
 - [Gog CLI](https://github.com/steipete/gogcli) for Gmail access
 - [Hermes Agent](https://github.com/NousResearch/hermes-agent) for AI classification (current integration uses an OpenAI Codex-backed Hermes provider)
 
+GNAIL stores its local state in macOS Application Support or the Linux XDG data directory by default.
+
 You can run GNAIL before connecting either external tool: it starts in clearly marked **demo mode**, using synthetic messages and local-only demo actions.
 
 ### Install and run
@@ -72,7 +74,7 @@ Archive and Trash decisions are kept as local feedback for future classification
 ## 🔒 Built for your inbox, not the other way around
 
 - GNAIL is designed to run on a machine you control; its default server address is `127.0.0.1`.
-- Message state, queue, and correction history are stored outside the repository in the user's application-support directory. Override the location with `GNAIL_DATA_DIR`.
+- Message state, queue, and correction history are stored outside the repository (macOS Application Support or Linux XDG data directory). Override the location with `GNAIL_DATA_DIR`.
 - AI classification sends message fields used for triage to the configured Hermes provider. Review that provider's privacy and data-handling terms before use.
 - Queue execution can change Gmail. Inspect staged actions before selecting **EXECUTE QUEUE**.
 - There is no message sending or permanent-delete action.

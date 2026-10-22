@@ -10,6 +10,7 @@ import { join } from 'node:path';
 import { applyLearnedSenderPreferences } from '../lib/classifier.js';
 import { normalizeThread } from '../lib/gog.js';
 import { labelFilterSuggestions, senderDisplayName, senderEmail } from '../lib/learning.js';
+import { defaultDataDirectory } from '../lib/paths.js';
 
 let serverProcess;
 let baseUrl;
@@ -224,6 +225,12 @@ test('does not bake a personal Gmail address into the default Gog configuration'
     env: Object.fromEntries(Object.entries(process.env).filter(([key]) => key !== 'GOG_ACCOUNT')),
   });
   assert.equal(stdout, '');
+});
+
+test('stores local state in platform-standard application data directories', () => {
+  assert.equal(defaultDataDirectory({ platform: 'darwin', home: '/home/test', env: {} }), '/home/test/Library/Application Support/GNAIL');
+  assert.equal(defaultDataDirectory({ platform: 'linux', home: '/home/test', env: {} }), '/home/test/.local/share/gnail');
+  assert.equal(defaultDataDirectory({ platform: 'linux', home: '/home/test', env: { XDG_DATA_HOME: '/data' } }), '/data/gnail');
 });
 
 test('suggests a sender filter after two distinct label choices, but not before', () => {

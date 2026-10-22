@@ -1,18 +1,18 @@
 import express from 'express';
 import { randomUUID } from 'node:crypto';
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { applyGogAction, captureInboxSnapshot, createGmailFilter, gogConnected, gogCredentialsConfigured, listGmailFilters, listGmailLabelRecords, listGmailLabels } from './lib/gog.js';
 import { classifyThreads, hermesStatus } from './lib/classifier.js';
 import { labelFilterSuggestions, senderDisplayName, senderEmail } from './lib/learning.js';
+import { defaultDataDirectory } from './lib/paths.js';
 
 const app = express();
 const here = fileURLToPath(new URL('.', import.meta.url));
 const port = Number(process.env.PORT || 3457);
 const host = '127.0.0.1';
-const dataDir = process.env.GNAIL_DATA_DIR || join(homedir(), 'Library', 'Application Support', 'G-NAIL');
+const dataDir = process.env.GNAIL_DATA_DIR || defaultDataDirectory();
 const inboxPath = join(dataDir, 'inbox.jsonl');
 const queuePath = join(dataDir, 'queue.jsonl');
 const historyPath = join(dataDir, 'history.jsonl');
