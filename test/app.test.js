@@ -16,6 +16,7 @@ let baseUrl;
 let dataDir;
 let mockGogPath;
 let mockGogLog;
+let mockHermesPath;
 const execFileAsync = promisify(execFile);
 
 async function freePort() {
@@ -39,13 +40,15 @@ before(async () => {
   dataDir = await mkdtemp(join(tmpdir(), 'g-nail-test-'));
   mockGogPath = join(dataDir, 'mock-gog');
   mockGogLog = join(dataDir, 'gog-calls.log');
+  mockHermesPath = join(dataDir, 'mock-hermes');
   await writeFile(mockGogPath, await readFile(new URL('./mock-gog.sh', import.meta.url)), { mode: 0o700 });
   await chmod(mockGogPath, 0o700);
+  await writeFile(mockHermesPath, '#!/bin/sh\nif [ "$1" = "--version" ]; then echo "Hermes test mock"; exit 0; fi\nif [ "$1" = "auth" ] && [ "$2" = "status" ]; then echo "$3: logged in"; exit 0; fi\nexit 1\n', { mode: 0o700 });
   const port = await freePort();
   baseUrl = `http://127.0.0.1:${port}`;
   serverProcess = spawn(process.execPath, ['server.js'], {
     cwd: new URL('..', import.meta.url),
-    env: { ...process.env, PORT: String(port), GNAIL_DATA_DIR: dataDir, GOG_BIN: mockGogPath, GOG_ACCOUNT: 'test@example.test', GOG_CALL_LOG: mockGogLog, GOG_MOCK_ACTION_DELAY: '0.2' },
+    env: { ...process.env, PORT: String(port), GNAIL_DATA_DIR: dataDir, GOG_BIN: mockGogPath, GOG_ACCOUNT: 'test@example.test', GOG_CALL_LOG: mockGogLog, HERMES_BIN: mockHermesPath, GOG_MOCK_ACTION_DELAY: '0.2' },
     stdio: 'ignore',
   });
   for (let attempt = 0; attempt < 50; attempt++) {
@@ -62,13 +65,18 @@ after(async () => {
 test('serves the local-only app without an access-code challenge', async () => {
   const page = await fetch(baseUrl);
   assert.equal(page.status, 200);
+  const state = await call('/api/state');
+  assert.equal(state.body.agentInstalled, true);
+  assert.equal(state.body.agentConfigured, true);
   const html = await page.text();
   assert.doesNotMatch(html, /login-form|access-code/);
-  const state = await call('/api/state');
   assert.equal(state.response.status, 200);
   assert.equal(state.body.demo, true);
   assert.equal(state.body.inbox.length, 20);
   assert.equal(state.body.queue.length, 0);
+  assert.match(html, /LET'S GET GNAIL CONNECTED/);
+  assert.match(html, /hermes setup model/);
+  assert.match(html, /gog auth setup you@example\.com/);
 });
 
 test('stages archive without changing inbox, then executes it', async () => {
