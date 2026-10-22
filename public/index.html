@@ -47,6 +47,8 @@
     .subject{font-size:14px}
     @media(max-width:650px){.shell{width:calc(100% - 22px)}.brand-lockup{gap:9px;margin:20px 0 7px}.brand-lockup .brand{font-size:39px;letter-spacing:4px}.logo-mark{width:39px;height:39px}.login-logo{font-size:32px}.subject{font-size:13px}.bulk-toolbar{gap:7px;padding:9px}.bulk-toolbar-label{flex-basis:100%;font-size:11px}.bulk-toolbar select{flex:1;min-width:130px;max-width:100%;font-size:11px}.bulk-toolbar .execute,.bulk-toolbar .secondary{font-size:10px;padding:8px}.group-head{flex-wrap:wrap}.group-search{order:3;flex:1 1 100%;min-width:100%;max-width:100%;margin:2px 0 0}.group-tools{order:4;flex:1 1 100%;width:100%;margin-left:0;justify-content:flex-end}.processing-card{padding:26px 20px 22px}.processing-title{font-size:17px}.processing-detail{font-size:11px}}
     @media(prefers-reduced-motion:reduce){.processing-orbit,.processing-ring,.processing-core,.processing-rail span{animation:none}}
+    .setup-overlay{position:fixed;z-index:90;inset:0;display:grid;place-items:center;padding:18px;background:#090910e8;backdrop-filter:blur(8px)}.setup-card{width:min(760px,100%);max-height:min(90vh,900px);overflow:auto;padding:25px;border:1px solid #f044a666;border-radius:10px;background:radial-gradient(ellipse at 15% 0%,#f044a613,transparent 48%),#101019;box-shadow:0 24px 90px #000b}.setup-card h2{margin:0 0 7px;color:var(--pink-light);font:700 22px Arial,sans-serif;letter-spacing:1px}.setup-intro,.setup-note{color:#b4aabd;font-size:13px}.setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}.setup-step{padding:15px;border:1px solid #30263a;border-radius:7px;background:#0b0a11}.setup-step h3{margin:0 0 9px;color:#eee;font:700 14px Arial,sans-serif}.setup-status{display:inline-block;margin:0 0 11px;padding:4px 8px;border:1px solid #dc718688;border-radius:20px;color:#ff9bb1;font-size:10px;letter-spacing:.5px}.setup-status.ready{border-color:#4fc8b488;color:#6ee2c8}.setup-step p{margin:8px 0;color:#b4aabd;font-size:12px}.setup-step code{display:block;overflow:auto;margin:9px 0;padding:9px;border:1px solid #30263a;border-radius:4px;background:#07070c;color:#f2c4dd;font-size:12px;white-space:pre}.setup-links{display:flex;gap:12px;flex-wrap:wrap;font-size:12px}.setup-links a{color:var(--pink-light)}.setup-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:18px}.setup-note{font-size:11px}
+    @media(max-width:650px){.setup-grid{grid-template-columns:1fr}.setup-card{padding:18px}.setup-card h2{font-size:19px}}
   </style>
   <style>@keyframes gnail-spin{to{transform:rotate(360deg)}}.processing-rail[data-determinate="true"] span{width:var(--progress);transform:none;animation:none;background:linear-gradient(90deg,#f044a6,#ff8bc9)}.processing-detail{overflow-wrap:anywhere}</style>
 </head>
@@ -56,7 +58,7 @@
     <div class="brand-lockup"><svg class="logo-mark" viewBox="0 0 40 40" aria-hidden="true"><path d="M6 13 20 22 34 13v17H6z" fill="none" stroke="#f044a6" stroke-width="2.5"/><path d="m23 5-9 16h7l-3 14 12-19h-7l4-11z" fill="#f5d4e6"/></svg><h1 class="brand">GNAIL</h1></div>
     <p class="subtitle">Nail those gmails to the wall!</p>
     <div id="demo-note" class="demo-note">DEMO MODE — sample subjects only. Nothing here changes Gmail.</div>
-    <nav class="controls" aria-label="Triage groups"><button class="pill active" data-filter="ALL">ALL GROUPS</button><button class="pill" data-filter="NEEDS EYES">NEEDS EYES</button><button class="pill" data-filter="ARCHIVABLE">ARCHIVABLE</button><button class="pill" data-filter="DELETABLE">DELETABLE</button><span class="spacer"></span><span class="count" id="inbox-count"></span><div class="gmail-controls"><button class="secondary" id="connect-gmail">CONNECT GMAIL</button><button class="secondary" id="sync-gmail">FETCH 50</button></div><button class="secondary" id="review-queue">QUEUE <span id="queue-badge">0</span></button></nav>
+    <nav class="controls" aria-label="Triage groups"><button class="pill active" data-filter="ALL">ALL GROUPS</button><button class="pill" data-filter="NEEDS EYES">NEEDS EYES</button><button class="pill" data-filter="ARCHIVABLE">ARCHIVABLE</button><button class="pill" data-filter="DELETABLE">DELETABLE</button><span class="spacer"></span><span class="count" id="inbox-count"></span><div class="gmail-controls"><button class="secondary" id="setup-button">SETUP</button><button class="secondary" id="connect-gmail">CONNECT GMAIL</button><button class="secondary" id="sync-gmail">FETCH 50</button></div><button class="secondary" id="review-queue">QUEUE <span id="queue-badge">0</span></button></nav>
     <div id="bulk-toolbar" class="bulk-toolbar hidden"><span class="bulk-toolbar-label"><strong id="selected-count">0</strong> selected across groups</span><select id="bulk-label" aria-label="Apply label to selected messages"><option value="">APPLY LABEL TO SELECTED…</option></select><button class="execute" id="apply-bulk-label" disabled>LABEL SELECTED</button><button class="secondary" id="clear-selection">CLEAR SELECTION</button></div>
     <div id="filter-suggestions" class="filter-suggestions"></div>
     <div class="batch" id="groups"></div>
@@ -75,6 +77,30 @@
     </section>
   </div>
   <div class="toast" id="toast" role="status"></div>
+  <section class="setup-overlay hidden" id="setup-overlay" role="dialog" aria-modal="true" aria-labelledby="setup-title">
+    <div class="setup-card">
+      <h2 id="setup-title">LET'S GET GNAIL CONNECTED</h2>
+      <p class="setup-intro">GNAIL runs the tools on this computer. Set up an AI classifier and Gmail access in Terminal; your credentials stay with those tools, not in GNAIL.</p>
+      <div class="setup-grid">
+        <section class="setup-step">
+          <h3>01 / AI CLASSIFIER</h3>
+          <span class="setup-status" id="agent-setup-status">CHECKING HERMES…</span>
+          <p>Install Hermes Agent, then run its setup wizard and choose the OpenAI/Codex provider you want to use.</p>
+          <code>hermes setup model</code>
+          <div class="setup-links"><a href="https://github.com/NousResearch/hermes-agent" target="_blank" rel="noreferrer">Hermes install guide ↗</a></div>
+        </section>
+        <section class="setup-step">
+          <h3>02 / GMAIL ACCESS</h3>
+          <span class="setup-status" id="gmail-setup-status">CHECKING GOG…</span>
+          <p>Install Gog CLI, configure your own Google OAuth client, and authorize the Gmail account you choose.</p>
+          <code>gog auth setup you@example.com</code>
+          <div class="setup-links"><a href="https://github.com/steipete/gogcli" target="_blank" rel="noreferrer">Gog install and auth guide ↗</a></div>
+        </section>
+      </div>
+      <p class="setup-note">After completing setup in Terminal, return here and check again. You can dismiss this and explore synthetic demo mail at any time. GNAIL never sends email; Gmail changes only happen when you explicitly execute a reviewed queue.</p>
+      <div class="setup-actions"><button class="secondary" id="setup-dismiss">NOT NOW — TRY DEMO</button><button class="execute" id="setup-check">CHECK CONNECTIONS</button></div>
+    </div>
+  </section>
   <script>
     let focusBeforeProcessing = null;
     let progressPollTimer = null;
@@ -214,6 +240,28 @@
       document.getElementById('connect-gmail').classList.toggle('hidden', state.gmailConnected);
       document.getElementById('sync-gmail').classList.toggle('hidden', !state.gmailConnected);
       render();
+      updateSetupStatus();
+      if (!localStorage.getItem('gnail.setup-dismissed') && (!state.gmailConnected || !state.agentConfigured)) openSetup();
+    }
+
+    function updateSetupStatus() {
+      const agent = document.getElementById('agent-setup-status');
+      agent.textContent = state.agentConfigured ? 'OPENAI/CODEX CONNECTED' : state.agentInstalled ? 'HERMES FOUND · SIGN IN' : 'HERMES NOT FOUND';
+      agent.classList.toggle('ready', state.agentConfigured);
+      const gmail = document.getElementById('gmail-setup-status');
+      gmail.textContent = state.gmailConnected ? 'GMAIL CONNECTED' : state.gmailConfigured ? 'GOG READY · AUTHORIZE ACCOUNT' : 'GOG NOT CONFIGURED';
+      gmail.classList.toggle('ready', state.gmailConnected);
+    }
+
+    function openSetup() {
+      updateSetupStatus();
+      document.getElementById('setup-overlay').classList.remove('hidden');
+      document.getElementById('setup-check').focus();
+    }
+
+    function closeSetup() {
+      document.getElementById('setup-overlay').classList.add('hidden');
+      localStorage.setItem('gnail.setup-dismissed', '1');
     }
 
     function actionLink(message, action, text, extra = {}) {
@@ -422,6 +470,23 @@
       render();
     }));
     document.getElementById('review-queue').addEventListener('click', () => document.getElementById('queue-panel').classList.toggle('open'));
+    document.getElementById('setup-button').addEventListener('click', openSetup);
+    document.getElementById('setup-dismiss').addEventListener('click', closeSetup);
+    document.getElementById('setup-check').addEventListener('click', async event => {
+      const button = event.currentTarget;
+      button.disabled = true;
+      button.textContent = 'CHECKING…';
+      try {
+        state = await api('/api/state');
+        updateSetupStatus();
+        if (state.gmailConnected && state.agentConfigured) {
+          localStorage.setItem('gnail.setup-dismissed', '1');
+          document.getElementById('setup-overlay').classList.add('hidden');
+          toast('GNAIL CONNECTIONS READY');
+        } else toast('SETUP STILL NEEDED — SEE STATUS ABOVE');
+      } catch (error) { toast(error.message); }
+      finally { button.disabled = false; button.textContent = 'CHECK CONNECTIONS'; }
+    });
     document.getElementById('connect-gmail').addEventListener('click', async () => {
       try { const result = await api('/api/gmail/connect'); if (result.connected) await load(); }
       catch (error) { toast(error.message); }
