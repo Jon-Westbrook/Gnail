@@ -5,7 +5,7 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { applyGogAction, captureInboxSnapshot, createGmailFilter, gogConnected, gogCredentialsConfigured, listGmailFilters, listGmailLabelRecords, listGmailLabels } from './lib/gog.js';
-import { classifyThreads } from './lib/classifier.js';
+import { classifyThreads, hermesStatus } from './lib/classifier.js';
 import { labelFilterSuggestions, senderDisplayName, senderEmail } from './lib/learning.js';
 
 const app = express();
@@ -134,6 +134,7 @@ app.get('/api/state', async (_req, res) => {
   const queue = getQueue();
   const history = readJsonl(historyPath);
   const connected = await gogConnected();
+  const agentStatus = await hermesStatus();
   let labels = existsSync(labelCachePath()) ? JSON.parse(readFileSync(labelCachePath(), 'utf8')) : [];
   if (connected) {
     try {
@@ -151,6 +152,8 @@ app.get('/api/state', async (_req, res) => {
     filterSuggestions,
     gmailConnected: connected,
     gmailConfigured: await gogCredentialsConfigured(),
+    agentInstalled: agentStatus.installed,
+    agentConfigured: agentStatus.configured,
     stats: {
       staged: queue.length,
       corrected: history.filter((event) => event.type === 'correction').length,
