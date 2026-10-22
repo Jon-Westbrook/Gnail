@@ -1,6 +1,6 @@
 <div align="center">
 
-# GNAIL 🐌📬
+<img src="assets/gnail-readme-banner.svg" alt="GNAIL — Nail those gmails to the wall!" width="760">
 
 ### Your inbox. Less noise. More **you**.
 
