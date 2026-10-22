@@ -4,6 +4,9 @@
   "private": false,
   "type": "module",
   "description": "A click-fast, local-first Gmail triage queue",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
