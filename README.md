@@ -7,7 +7,7 @@
 **A local-first, agent-assisted Gmail triage queue.**  
 Sort the pile quickly, keep the final say, and never let an agent click the button for you.
 
-[Get started](#-quick-start) · [How it works](#-the-triage-loop) · [Safety](#-built-for-your-inbox-not-the-other-way-around) · [Development](#-development)
+[Get started](#-quick-start) · [How it works](#-the-triage-loop) · [Safety](#-built-for-your-inbox-not-the-other-way-around) · [Development](#-development) · [MIT License](LICENSE)
 
 </div>
 
@@ -101,4 +101,4 @@ Issues and focused pull requests are welcome. Please include tests for behavior 
 
 ## License
 
-License selection is pending. Until a license is added, normal copyright restrictions apply; please do not assume the code is available for reuse.
+GNAIL is available under the [MIT License](LICENSE).
