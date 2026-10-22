@@ -30,7 +30,7 @@ Sort the pile quickly, keep the final say, and never let an agent click the butt
 ### Requirements
 
 - macOS or Linux
-- Node.js 20 or newer
+- Node.js 22 or newer
 - [Gog CLI](https://github.com/steipete/gogcli) for Gmail access
 - [Hermes Agent](https://github.com/NousResearch/hermes-agent) for AI classification (current integration uses an OpenAI Codex-backed Hermes provider)
 
