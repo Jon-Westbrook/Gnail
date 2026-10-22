@@ -49,15 +49,15 @@ Open <http://127.0.0.1:3457>. GNAIL binds to the loopback interface by default; 
 
 ### Connect your own Gmail and agent
 
-GNAIL invokes the Gog and Hermes command-line tools installed on the same machine. Install and configure those tools using their upstream instructions, then authenticate them for the account you choose. Set `GOG_ACCOUNT` if Gog does not have a default account; set `GOG_BIN`, `HERMES_BIN`, or `HERMES_MODEL` if you use non-default executable paths or a different supported Hermes model.
+GNAIL invokes the Gog and Hermes command-line tools installed on the same machine. The first-run setup guide checks whether Hermes and Gmail are connected, then points you to the tools' own setup flows. It does not install tools or collect credentials. Set `GOG_ACCOUNT` when Gog has no default account, and set `GOG_BIN`, `HERMES_BIN`, `HERMES_PROVIDER`, or `HERMES_MODEL` to override executable paths or the classifier provider/model.
 
 ```sh
 GOG_ACCOUNT=you@example.com npm start
 ```
 
-GNAIL does **not** collect OAuth credentials or provide a first-run account wizard yet. Credentials remain under the CLI tools' own local credential stores. Do not put tokens, OAuth client secrets, mailbox exports, or `.env` files in this repository.
+For the Gmail connector, follow Gog's OAuth setup for your own Google Cloud project and account. For the classifier, run `hermes setup model` and choose the OpenAI/Codex provider you have authenticated. Credentials remain under the CLI tools' own local credential stores. Do not put tokens, OAuth client secrets, mailbox exports, or `.env` files in this repository.
 
-> **Agent support today:** the classifier currently calls Hermes with its OpenAI Codex provider. A setup wizard and alternative agent/provider support are not implemented yet; see [Roadmap](#-roadmap).
+> **Agent support today:** the classifier currently uses Hermes with its OpenAI Codex provider. The provider can be changed with `HERMES_PROVIDER`; `HERMES_MODEL` selects the model. Other agent integrations are not yet supported.
 
 ## 🌀 The triage loop
 
@@ -89,7 +89,7 @@ Tests use a disposable mock Gog executable and synthetic data; they do not need 
 
 ## 🗺️ Roadmap
 
-- First-run setup flow for choosing and connecting a supported agent.
+- More guided setup diagnostics, including clear feedback when the selected provider is not authenticated.
 - A provider-neutral classifier interface (starting with the current Hermes integration).
 - Guided, least-privilege Gmail setup and clearer connection diagnostics.
 - Tailscale-only VPS deployment guide and service hardening.
