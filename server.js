@@ -106,7 +106,13 @@ function getInbox() {
     .filter(message => !messageIsFlagged(message, flaggedIds))
     .map(message => ({ ...message, senderName: message.senderName || senderDisplayName(message.from) }));
 }
-function getQueue() { return readJsonl(queuePath); }
+function getQueue() {
+  return readJsonl(queuePath).map(item => {
+    if (item.action !== 'unsubscribe' || !item.error) return item;
+    const { error: _legacyManualError, ...rest } = item;
+    return { ...rest, manualPending: true };
+  });
+}
 function readGmailState() { return JSON.parse(readFileSync(gmailStatePath, 'utf8')); }
 function writeGmailState(value) { writeFileSync(gmailStatePath, JSON.stringify(value, null, 2), { mode: 0o600 }); }
 function labelCachePath() { return join(dataDir, 'gmail-labels.json'); }
@@ -295,7 +301,7 @@ app.post('/api/queue/:id/done', (req, res) => {
   if (operationInProgress) return res.status(409).json({ error: 'Wait for the current operation to finish before changing the queue' });
   const queue = getQueue();
   const item = queue.find(entry => entry.id === req.params.id);
-  if (!item || item.action !== 'unsubscribe' || !item.error) return res.status(409).json({ error: 'Only a failed manual unsubscribe can be marked done here' });
+  if (!item || item.action !== 'unsubscribe') return res.status(409).json({ error: 'Only a manual unsubscribe can be marked done here' });
   const next = queue.filter(entry => entry.id !== item.id);
   writeJsonl(queuePath, next);
   logEvent({ type: 'executed', messageId: item.messageId, subject: item.subject, action: 'unsubscribe', manual: true });
@@ -363,13 +369,20 @@ app.post('/api/execute', async (_req, res) => {
           return;
         }
 
+        if (item.action === 'unsubscribe') {
+          delete item.error;
+          item.manualPending = true;
+          remaining.push(item);
+          return;
+        }
+
         if (message.demo) {
-          if (['archive', 'trash', 'unsubscribe'].includes(item.action)) inbox.splice(inbox.findIndex(row => row.id === identity), 1);
+          if (['archive', 'trash'].includes(item.action)) inbox.splice(inbox.findIndex(row => row.id === identity), 1);
           else if (item.action === 'move') message.category = item.category;
           else if (item.action === 'label') message.labels = [...new Set([...(message.labels || []), item.label])];
-        } else if (['archive', 'trash', 'label', 'unsubscribe'].includes(item.action)) {
+        } else if (['archive', 'trash', 'label'].includes(item.action)) {
           await applyGogAction(item, knownLabels, pendingLabelCreations);
-          if (['archive', 'trash', 'unsubscribe'].includes(item.action)) inbox.splice(inbox.findIndex(row => row.id === identity), 1);
+          if (['archive', 'trash'].includes(item.action)) inbox.splice(inbox.findIndex(row => row.id === identity), 1);
           if (item.action === 'label') {
             message.labels = [...new Set([...(message.labels || []), item.label])];
             refreshedLabels = true;
@@ -378,7 +391,7 @@ app.post('/api/execute', async (_req, res) => {
           message.category = item.category;
         }
 
-        const confirmedCategory = item.action === 'archive' ? 'ARCHIVABLE' : ['trash', 'unsubscribe'].includes(item.action) ? 'DELETABLE' : item.action === 'move' ? item.category : null;
+        const confirmedCategory = item.action === 'archive' ? 'ARCHIVABLE' : item.action === 'trash' ? 'DELETABLE' : item.action === 'move' ? item.category : null;
         if (confirmedCategory && confirmedCategory !== item.originalCategory) {
           logEvent({ type: 'correction', messageId: message.messageId || message.id, subject: message.subject, sender: message.from, senderName: message.senderName, from: item.originalCategory, to: confirmedCategory });
         }
@@ -406,7 +419,14 @@ app.post('/api/execute', async (_req, res) => {
     writeJsonl(queuePath, remaining);
     if (refreshedLabels) writeLabelCache(await listGmailLabels());
     const history = readJsonl(historyPath);
-    const response = { completed: completed.length, failed: remaining.map(item => ({ subject: item.subject, error: item.error })), inbox, queue: remaining, demo: inbox.some(message => message.demo) };
+    const response = {
+      completed: completed.length,
+      failed: remaining.filter(item => item.error).map(item => ({ subject: item.subject, error: item.error })),
+      manual: remaining.filter(item => item.manualPending).map(item => ({ subject: item.subject, action: item.action })),
+      inbox,
+      queue: remaining,
+      demo: inbox.some(message => message.demo),
+    };
     const changedFilterInputs = queue.some(item => completed.includes(item.id) && ['label', 'create_filter'].includes(item.action));
     if (changedFilterInputs) response.filterSuggestions = await getFilterSuggestions(history, remaining);
     res.json(response);

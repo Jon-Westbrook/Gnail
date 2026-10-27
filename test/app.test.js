@@ -108,6 +108,18 @@ test('stages one label operation for multiple selected messages without executin
   assert.equal((await call('/api/state')).body.queue.length, 0);
 });
 
+test('keeps unsubscribe as a manual action instead of reporting a failure', async () => {
+  await call('/api/stage', { method: 'POST', body: JSON.stringify({ ids: ['A-016'], action: 'unsubscribe' }) });
+  const executed = await call('/api/execute', { method: 'POST', body: '{}' });
+  assert.equal(executed.response.status, 200);
+  assert.deepEqual(executed.body.failed, []);
+  assert.equal(executed.body.manual.length, 1);
+  assert.equal(executed.body.queue[0].manualPending, true);
+  assert(executed.body.inbox.some(message => message.id === 'A-016'));
+  const done = await call(`/api/queue/${executed.body.queue[0].id}/done`, { method: 'POST', body: '{}' });
+  assert.equal(done.body.queue.length, 0);
+});
+
 test('deduplicates repeated IDs and reports when a staged action is replaced', async () => {
   await call('/api/stage', { method: 'POST', body: JSON.stringify({ ids: ['A-010'], action: 'archive' }) });
   const updated = await call('/api/stage', { method: 'POST', body: JSON.stringify({ ids: ['A-010', 'A-010'], action: 'trash' }) });
