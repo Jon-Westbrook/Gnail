@@ -60,7 +60,7 @@ npm install -g @openai/codex
 codex login
 ```
 
-Set `GOG_ACCOUNT` when Gog has no default account. `GOG_BIN`, `CODEX_BIN`, and `CODEX_MODEL` can override the executable paths or classification model; if `CODEX_MODEL` is unset, Codex uses its configured default.
+Set `GOG_ACCOUNT` when Gog has no default account. `GOG_BIN`, `CODEX_BIN`, and `CODEX_MODEL` can override the executable paths or classification model; if `CODEX_MODEL` is unset, Codex uses its configured default. GNAIL uses low reasoning for fast classification by default; override it with `CODEX_REASONING_EFFORT` or adjust the three-minute limit with `CODEX_TIMEOUT_MS`.
 
 ```sh
 GOG_ACCOUNT=you@example.com npm start
