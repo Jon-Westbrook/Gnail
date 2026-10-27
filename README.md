@@ -66,7 +66,7 @@ Set `GOG_ACCOUNT` when Gog has no default account. `GOG_BIN`, `CODEX_BIN`, and `
 GOG_ACCOUNT=you@example.com npm start
 ```
 
-For the Gmail connector, follow Gog's OAuth setup for your own Google Cloud project and account, requesting only Gmail access: `gog auth setup you@example.com --services gmail`. For the classifier, run `hermes setup model` and choose the OpenAI/Codex provider you have authenticated. Credentials remain under the CLI tools' own local credential stores. Do not put tokens, OAuth client secrets, mailbox exports, or `.env` files in this repository.
+For the Gmail connector, follow Gog's OAuth setup for your own Google Cloud project and account, requesting only Gmail access: `gog auth setup you@example.com --services gmail`. For the classifier, `codex login` opens the ChatGPT browser sign-in. Credentials remain under the CLI tools' own local credential stores. Do not put tokens, OAuth client secrets, mailbox exports, or `.env` files in this repository.
 
 > **Classifier support today:** GNAIL currently uses Codex CLI and its ChatGPT browser authentication. Other model providers are not yet supported.
 
