@@ -250,6 +250,14 @@ test('accepts the Gog default account when GOG_ACCOUNT is unset', async () => {
   assert.equal(stdout, 'true');
 });
 
+test('does not report Gmail connected when the stored token is rejected', async () => {
+  const { stdout } = await execFileAsync(process.execPath, ['--input-type=module', '-e', "import { gogConnected } from './lib/gog.js'; process.stdout.write(String(await gogConnected()))"], {
+    cwd: new URL('..', import.meta.url),
+    env: { ...process.env, GOG_BIN: mockGogPath, GOG_ACCOUNT: 'test@example.test', GOG_MOCK_AUTH_ERROR: '1' },
+  });
+  assert.equal(stdout, 'false');
+});
+
 test('stores local state in platform-standard application data directories', () => {
   assert.equal(defaultDataDirectory({ platform: 'darwin', home: '/home/test', env: {}, exists: () => false }), '/home/test/Library/Application Support/GNAIL');
   assert.equal(defaultDataDirectory({ platform: 'darwin', home: '/home/test', env: {}, exists: path => path.endsWith('G-NAIL') }), '/home/test/Library/Application Support/G-NAIL');
