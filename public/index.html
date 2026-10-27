@@ -343,7 +343,12 @@ codex login</code>
 
     function renderQueue() {
       const list = document.getElementById('queue-items');
-      list.innerHTML = state.queue.length ? state.queue.map(item => `<div class="queue-item"><span class="queue-subject">${esc(item.action === 'create_filter' ? item.senderName : item.subject)}</span><span class="queue-action">${esc(item.action === 'create_filter' ? 'CREATE FILTER' : item.action === 'needs_eyes' || item.action === 'keep' ? 'NEEDS EYES' : item.action.toUpperCase())}${item.category ? ` → ${esc(item.category)}` : ''}${item.label ? ` · ${esc(item.label)}` : ''}</span>${item.error ? `<span class="queue-error" title="${esc(item.error)}">FAILED</span>` : ''}${item.error && item.action === 'unsubscribe' && item.webUrl ? `<a class="action-link" href="${esc(item.webUrl)}" target="_blank" rel="noopener noreferrer">OPEN GMAIL</a><button class="action-link" data-done="${esc(item.id)}">DONE</button>` : ''}<button class="action-link queue-remove" data-unstage="${esc(item.id)}">UNDO</button></div>`).join('') : '<div class="empty">QUEUE IS CLEAR — GMAIL IS UNTOUCHED</div>';
+      list.innerHTML = state.queue.length ? state.queue.map(item => {
+        const manual = item.action === 'unsubscribe';
+        const actionName = item.action === 'create_filter' ? 'CREATE FILTER' : item.action === 'needs_eyes' || item.action === 'keep' ? 'NEEDS EYES' : manual ? 'UNSUBSCRIBE · MANUAL' : item.action.toUpperCase();
+        const manualControls = manual && item.webUrl ? `<span class="queue-error">ACTION REQUIRED</span><a class="action-link" href="${esc(item.webUrl)}" target="_blank" rel="noopener noreferrer">OPEN GMAIL</a><button class="action-link" data-done="${esc(item.id)}">MARK DONE</button>` : '';
+        return `<div class="queue-item"><span class="queue-subject">${esc(item.action === 'create_filter' ? item.senderName : item.subject)}</span><span class="queue-action">${esc(actionName)}${item.category ? ` → ${esc(item.category)}` : ''}${item.label ? ` · ${esc(item.label)}` : ''}</span>${item.error ? `<span class="queue-error" title="${esc(item.error)}">FAILED</span>` : ''}${manualControls}<button class="action-link queue-remove" data-unstage="${esc(item.id)}">UNDO</button></div>`;
+      }).join('') : '<div class="empty">QUEUE IS CLEAR — GMAIL IS UNTOUCHED</div>';
     }
 
     async function stage(ids, action, details = {}) {
@@ -532,6 +537,10 @@ codex login</code>
           failed = true;
           const details = result.failed.slice(0, 3).map(item => `${item.subject}: ${item.error}`).join(' | ');
           showProcessingError('QUEUE NEEDS ATTENTION', { code: 'PARTIAL_FAILURE', message: `${result.failed.length} action(s) failed. ${details}` });
+        } else if (result.manual?.length) {
+          setActivity('');
+          document.getElementById('queue-panel').classList.add('open');
+          toast(`${result.manual.length} MANUAL UNSUBSCRIBE${result.manual.length === 1 ? '' : 'S'} READY`);
         } else {
           setActivity('');
           toast(`${result.completed} ACTION${result.completed === 1 ? '' : 'S'} COMPLETED${result.demo ? ' — DEMO ONLY' : ''}`);
