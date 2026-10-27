@@ -167,7 +167,7 @@ app.get('/api/gmail/connect', async (_req, res) => {
   if (await gogConnected()) return res.json({ connected: true });
   const configured = await gogCredentialsConfigured();
   res.status(409).json({ error: configured
-    ? 'Gog is ready, but its local Keychain has no Gmail token yet. Import the existing refresh token to continue.'
+    ? 'Gog is ready, but Gmail authorization is missing or expired. Run gog auth add you@example.com --services gmail, then check again.'
     : 'Gog is not configured yet. Install gogcli and configure an OAuth client before connecting.' });
 });
 
