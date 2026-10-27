@@ -49,6 +49,16 @@ npm start
 
 Open <http://127.0.0.1:3457>. GNAIL binds to the loopback interface by default; it is not intended to be exposed directly to the public internet.
 
+### Keep it running on macOS
+
+After confirming the normal install works, install GNAIL as a per-user LaunchAgent:
+
+```sh
+npm run service:install:macos
+```
+
+It starts at login and restarts after an unexpected exit. Logs are written to `~/Library/Logs/GNAIL/`. Re-run the command after moving the repository or changing the Node.js installation path.
+
 ### Connect your own Gmail and ChatGPT
 
 GNAIL invokes Gog and Codex CLI on the same machine. The first-run setup guide checks whether Gmail and ChatGPT are connected, then points you to each tool's own setup flow. It does not install tools or collect credentials.
