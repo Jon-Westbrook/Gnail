@@ -44,7 +44,7 @@ before(async () => {
   mockCodexPath = join(dataDir, 'mock-codex');
   await writeFile(mockGogPath, await readFile(new URL('./mock-gog.sh', import.meta.url)), { mode: 0o700 });
   await chmod(mockGogPath, 0o700);
-  await writeFile(mockCodexPath, '#!/bin/sh\nif [ "$1" = "--version" ]; then echo "codex-cli test"; exit 0; fi\nif [ "$1" = "login" ] && [ "$2" = "status" ]; then echo "Logged in using ChatGPT"; exit 0; fi\nif [ "$1" = "exec" ]; then\n  previous=""\n  for argument in "$@"; do\n    if [ "$previous" = "--output-last-message" ]; then output="$argument"; break; fi\n    previous="$argument"\n  done\n  if [ -n "$CODEX_MOCK_RESULT" ]; then printf %s "$CODEX_MOCK_RESULT" > "$output"; else printf %s "{\"classifications\":[]}" > "$output"; fi\n  exit 0\nfi\nexit 1\n', { mode: 0o700 });
+  await writeFile(mockCodexPath, '#!/bin/sh\nif [ "$1" = "--version" ]; then echo "codex-cli test"; exit 0; fi\nif [ "$1" = "login" ] && [ "$2" = "status" ]; then echo "Logged in using ChatGPT"; exit 0; fi\nif [ "$1" = "exec" ]; then\n  if [ -n "$CODEX_MOCK_FAIL" ]; then cat >&2; exit 1; fi\n  previous=""\n  for argument in "$@"; do\n    if [ "$previous" = "--output-last-message" ]; then output="$argument"; break; fi\n    previous="$argument"\n  done\n  if [ -n "$CODEX_MOCK_RESULT" ]; then printf %s "$CODEX_MOCK_RESULT" > "$output"; else printf %s "{\"classifications\":[]}" > "$output"; fi\n  exit 0\nfi\nexit 1\n', { mode: 0o700 });
   const port = await freePort();
   baseUrl = `http://127.0.0.1:${port}`;
   serverProcess = spawn(process.execPath, ['server.js'], {
@@ -217,6 +217,22 @@ test('classifies through an ephemeral Codex CLI call', async () => {
   } finally {
     if (previousBin === undefined) delete process.env.CODEX_BIN; else process.env.CODEX_BIN = previousBin;
     if (previousResult === undefined) delete process.env.CODEX_MOCK_RESULT; else process.env.CODEX_MOCK_RESULT = previousResult;
+  }
+});
+
+test('does not expose email prompt contents when Codex fails', async () => {
+  const previousBin = process.env.CODEX_BIN;
+  const previousFail = process.env.CODEX_MOCK_FAIL;
+  process.env.CODEX_BIN = mockCodexPath;
+  process.env.CODEX_MOCK_FAIL = '1';
+  try {
+    await assert.rejects(
+      classifyThreads([{ id: 'private-thread', from: 'Private Sender', subject: 'Sensitive subject' }]),
+      error => /Codex classification failed/.test(error.message) && !/Sensitive subject/.test(error.message),
+    );
+  } finally {
+    if (previousBin === undefined) delete process.env.CODEX_BIN; else process.env.CODEX_BIN = previousBin;
+    if (previousFail === undefined) delete process.env.CODEX_MOCK_FAIL; else process.env.CODEX_MOCK_FAIL = previousFail;
   }
 });
 
