@@ -77,7 +77,7 @@ test('serves the local-only app without an access-code challenge', async () => {
   assert.equal(state.body.inbox.length, 20);
   assert.equal(state.body.queue.length, 0);
   assert.match(html, /LET'S GET GNAIL CONNECTED/);
-  assert.match(html, /hermes setup model/);
+  assert.match(html, /codex login/);
   assert.match(html, /gog auth setup you@example\.com --services gmail/);
 });
 
