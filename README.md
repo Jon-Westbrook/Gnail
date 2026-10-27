@@ -32,7 +32,7 @@ Sort the pile quickly, keep the final say, and never let an agent click the butt
 - macOS or Linux
 - Node.js 22 or newer
 - [Gog CLI](https://github.com/steipete/gogcli) for Gmail access
-- [Hermes Agent](https://github.com/NousResearch/hermes-agent) for AI classification (current integration uses an OpenAI Codex-backed Hermes provider)
+- [OpenAI Codex CLI](https://github.com/openai/codex) for classification through your ChatGPT sign-in
 
 GNAIL stores its local state in macOS Application Support or the Linux XDG data directory by default.
 
@@ -49,9 +49,18 @@ npm start
 
 Open <http://127.0.0.1:3457>. GNAIL binds to the loopback interface by default; it is not intended to be exposed directly to the public internet.
 
-### Connect your own Gmail and agent
+### Connect your own Gmail and ChatGPT
 
-GNAIL invokes the Gog and Hermes command-line tools installed on the same machine. The first-run setup guide checks whether Hermes and Gmail are connected, then points you to the tools' own setup flows. It does not install tools or collect credentials. Set `GOG_ACCOUNT` when Gog has no default account, and set `GOG_BIN`, `HERMES_BIN`, `HERMES_PROVIDER`, or `HERMES_MODEL` to override executable paths or the classifier provider/model. If `HERMES_MODEL` is unset, GNAIL uses the model selected in Hermes.
+GNAIL invokes Gog and Codex CLI on the same machine. The first-run setup guide checks whether Gmail and ChatGPT are connected, then points you to each tool's own setup flow. It does not install tools or collect credentials.
+
+Install Codex CLI and authenticate through its browser flow:
+
+```sh
+npm install -g @openai/codex
+codex login
+```
+
+Set `GOG_ACCOUNT` when Gog has no default account. `GOG_BIN`, `CODEX_BIN`, and `CODEX_MODEL` can override the executable paths or classification model; if `CODEX_MODEL` is unset, Codex uses its configured default.
 
 ```sh
 GOG_ACCOUNT=you@example.com npm start
@@ -59,7 +68,7 @@ GOG_ACCOUNT=you@example.com npm start
 
 For the Gmail connector, follow Gog's OAuth setup for your own Google Cloud project and account, requesting only Gmail access: `gog auth setup you@example.com --services gmail`. For the classifier, run `hermes setup model` and choose the OpenAI/Codex provider you have authenticated. Credentials remain under the CLI tools' own local credential stores. Do not put tokens, OAuth client secrets, mailbox exports, or `.env` files in this repository.
 
-> **Agent support today:** the classifier currently uses Hermes with its OpenAI Codex provider. The provider can be changed with `HERMES_PROVIDER`; `HERMES_MODEL` selects the model. Other agent integrations are not yet supported.
+> **Classifier support today:** GNAIL currently uses Codex CLI and its ChatGPT browser authentication. Other model providers are not yet supported.
 
 ## 🌀 The triage loop
 
@@ -75,7 +84,7 @@ Archive and Trash decisions are kept as local feedback for future classification
 
 - GNAIL is designed to run on a machine you control; its default server address is `127.0.0.1`.
 - Message state, queue, and correction history are stored outside the repository (macOS Application Support or Linux XDG data directory). Override the location with `GNAIL_DATA_DIR`.
-- AI classification sends message fields used for triage to the configured Hermes provider. Review that provider's privacy and data-handling terms before use.
+- AI classification sends the sender, subject, snippet, and list identifier to OpenAI through Codex CLI. Each classification uses an ephemeral Codex session, but you should still review OpenAI's privacy and data-handling terms before use.
 - Queue execution can change Gmail. Inspect staged actions before selecting **EXECUTE QUEUE**.
 - There is no message sending or permanent-delete action.
 - Do not expose the server directly to the internet. A remote deployment needs an authenticated private network/reverse proxy and a separate credential/security review.
@@ -92,7 +101,7 @@ Tests use a disposable mock Gog executable and synthetic data; they do not need 
 ## 🗺️ Roadmap
 
 - More guided setup diagnostics, including clear feedback when the selected provider is not authenticated.
-- A provider-neutral classifier interface (starting with the current Hermes integration).
+- A provider-neutral classifier interface beyond the current Codex integration.
 - Guided, least-privilege Gmail setup and clearer connection diagnostics.
 - Tailscale-only VPS deployment guide and service hardening.
 - Optional separate, readable inbox view (Gmail remains the current place to read full message bodies).
