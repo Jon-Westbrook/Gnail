@@ -4,7 +4,7 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } fr
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { applyGogAction, captureInboxSnapshot, createGmailFilter, gogConnected, gogCredentialsConfigured, listGmailFilters, listGmailLabelRecords, listGmailLabels } from './lib/gog.js';
-import { classifyThreads, hermesStatus } from './lib/classifier.js';
+import { classifyThreads, codexStatus } from './lib/classifier.js';
 import { labelFilterSuggestions, senderDisplayName, senderEmail } from './lib/learning.js';
 import { defaultDataDirectory } from './lib/paths.js';
 
@@ -134,7 +134,7 @@ app.get('/api/state', async (_req, res) => {
   const queue = getQueue();
   const history = readJsonl(historyPath);
   const connected = await gogConnected();
-  const agentStatus = await hermesStatus();
+  const classifierStatus = await codexStatus();
   let labels = existsSync(labelCachePath()) ? JSON.parse(readFileSync(labelCachePath(), 'utf8')) : [];
   if (connected) {
     try {
@@ -152,8 +152,9 @@ app.get('/api/state', async (_req, res) => {
     filterSuggestions,
     gmailConnected: connected,
     gmailConfigured: await gogCredentialsConfigured(),
-    agentInstalled: agentStatus.installed,
-    agentConfigured: agentStatus.configured,
+    classifierProvider: 'codex',
+    classifierInstalled: classifierStatus.installed,
+    classifierConfigured: classifierStatus.configured,
     stats: {
       staged: queue.length,
       corrected: history.filter((event) => event.type === 'correction').length,

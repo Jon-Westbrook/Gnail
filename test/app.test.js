@@ -7,7 +7,7 @@ import { createServer } from 'node:net';
 import { chmod, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { applyLearnedSenderPreferences } from '../lib/classifier.js';
+import { applyLearnedSenderPreferences, classifyThreads } from '../lib/classifier.js';
 import { normalizeThread } from '../lib/gog.js';
 import { labelFilterSuggestions, senderDisplayName, senderEmail } from '../lib/learning.js';
 import { defaultDataDirectory } from '../lib/paths.js';
@@ -17,7 +17,7 @@ let baseUrl;
 let dataDir;
 let mockGogPath;
 let mockGogLog;
-let mockHermesPath;
+let mockCodexPath;
 const execFileAsync = promisify(execFile);
 
 async function freePort() {
@@ -41,15 +41,15 @@ before(async () => {
   dataDir = await mkdtemp(join(tmpdir(), 'g-nail-test-'));
   mockGogPath = join(dataDir, 'mock-gog');
   mockGogLog = join(dataDir, 'gog-calls.log');
-  mockHermesPath = join(dataDir, 'mock-hermes');
+  mockCodexPath = join(dataDir, 'mock-codex');
   await writeFile(mockGogPath, await readFile(new URL('./mock-gog.sh', import.meta.url)), { mode: 0o700 });
   await chmod(mockGogPath, 0o700);
-  await writeFile(mockHermesPath, '#!/bin/sh\nif [ "$1" = "--version" ]; then echo "Hermes test mock"; exit 0; fi\nif [ "$1" = "auth" ] && [ "$2" = "status" ]; then echo "$3: logged in"; exit 0; fi\nexit 1\n', { mode: 0o700 });
+  await writeFile(mockCodexPath, '#!/bin/sh\nif [ "$1" = "--version" ]; then echo "codex-cli test"; exit 0; fi\nif [ "$1" = "login" ] && [ "$2" = "status" ]; then echo "Logged in using ChatGPT"; exit 0; fi\nif [ "$1" = "exec" ]; then\n  previous=""\n  for argument in "$@"; do\n    if [ "$previous" = "--output-last-message" ]; then output="$argument"; break; fi\n    previous="$argument"\n  done\n  if [ -n "$CODEX_MOCK_RESULT" ]; then printf %s "$CODEX_MOCK_RESULT" > "$output"; else printf %s "{\"classifications\":[]}" > "$output"; fi\n  exit 0\nfi\nexit 1\n', { mode: 0o700 });
   const port = await freePort();
   baseUrl = `http://127.0.0.1:${port}`;
   serverProcess = spawn(process.execPath, ['server.js'], {
     cwd: new URL('..', import.meta.url),
-    env: { ...process.env, PORT: String(port), GNAIL_DATA_DIR: dataDir, GOG_BIN: mockGogPath, GOG_ACCOUNT: 'test@example.test', GOG_CALL_LOG: mockGogLog, HERMES_BIN: mockHermesPath, GOG_MOCK_ACTION_DELAY: '0.2' },
+    env: { ...process.env, PORT: String(port), GNAIL_DATA_DIR: dataDir, GOG_BIN: mockGogPath, GOG_ACCOUNT: 'test@example.test', GOG_CALL_LOG: mockGogLog, CODEX_BIN: mockCodexPath, GOG_MOCK_ACTION_DELAY: '0.2' },
     stdio: 'ignore',
   });
   for (let attempt = 0; attempt < 50; attempt++) {
@@ -67,8 +67,9 @@ test('serves the local-only app without an access-code challenge', async () => {
   const page = await fetch(baseUrl);
   assert.equal(page.status, 200);
   const state = await call('/api/state');
-  assert.equal(state.body.agentInstalled, true);
-  assert.equal(state.body.agentConfigured, true);
+  assert.equal(state.body.classifierProvider, 'codex');
+  assert.equal(state.body.classifierInstalled, true);
+  assert.equal(state.body.classifierConfigured, true);
   const html = await page.text();
   assert.doesNotMatch(html, /login-form|access-code/);
   assert.equal(state.response.status, 200);
@@ -203,6 +204,20 @@ test('two consistent sender corrections teach the next batch', () => {
   assert.equal(learned[0].category, 'DELETABLE');
   const cautious = applyLearnedSenderPreferences(nextBatch, new Map([['new-1', 'NEEDS EYES']]), corrections.slice(0, 1));
   assert.equal(cautious[0].category, 'NEEDS EYES');
+});
+
+test('classifies through an ephemeral Codex CLI call', async () => {
+  const previousBin = process.env.CODEX_BIN;
+  const previousResult = process.env.CODEX_MOCK_RESULT;
+  process.env.CODEX_BIN = mockCodexPath;
+  process.env.CODEX_MOCK_RESULT = JSON.stringify({ classifications: [{ id: 'thread-1', category: 'ARCHIVABLE' }] });
+  try {
+    const classified = await classifyThreads([{ id: 'thread-1', from: 'Sender <sender@example.test>', subject: 'Your receipt' }]);
+    assert.equal(classified[0].category, 'ARCHIVABLE');
+  } finally {
+    if (previousBin === undefined) delete process.env.CODEX_BIN; else process.env.CODEX_BIN = previousBin;
+    if (previousResult === undefined) delete process.env.CODEX_MOCK_RESULT; else process.env.CODEX_MOCK_RESULT = previousResult;
+  }
 });
 
 test('normalizes Gog search rows for the subject-only inbox list', () => {
