@@ -227,8 +227,17 @@ test('does not bake a personal Gmail address into the default Gog configuration'
   assert.equal(stdout, '');
 });
 
+test('accepts the Gog default account when GOG_ACCOUNT is unset', async () => {
+  const { stdout } = await execFileAsync(process.execPath, ['--input-type=module', '-e', "import { gogConnected } from './lib/gog.js'; process.stdout.write(String(await gogConnected()))"], {
+    cwd: new URL('..', import.meta.url),
+    env: Object.fromEntries(Object.entries({ ...process.env, GOG_BIN: mockGogPath }).filter(([key]) => key !== 'GOG_ACCOUNT')),
+  });
+  assert.equal(stdout, 'true');
+});
+
 test('stores local state in platform-standard application data directories', () => {
-  assert.equal(defaultDataDirectory({ platform: 'darwin', home: '/home/test', env: {} }), '/home/test/Library/Application Support/GNAIL');
+  assert.equal(defaultDataDirectory({ platform: 'darwin', home: '/home/test', env: {}, exists: () => false }), '/home/test/Library/Application Support/GNAIL');
+  assert.equal(defaultDataDirectory({ platform: 'darwin', home: '/home/test', env: {}, exists: path => path.endsWith('G-NAIL') }), '/home/test/Library/Application Support/G-NAIL');
   assert.equal(defaultDataDirectory({ platform: 'linux', home: '/home/test', env: {} }), '/home/test/.local/share/gnail');
   assert.equal(defaultDataDirectory({ platform: 'linux', home: '/home/test', env: { XDG_DATA_HOME: '/data' } }), '/data/gnail');
 });
