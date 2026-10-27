@@ -68,6 +68,8 @@ GOG_ACCOUNT=you@example.com npm start
 
 For the Gmail connector, follow Gog's OAuth setup for your own Google Cloud project and account, requesting only Gmail access: `gog auth setup you@example.com --services gmail`. For the classifier, `codex login` opens the ChatGPT browser sign-in. Credentials remain under the CLI tools' own local credential stores. Do not put tokens, OAuth client secrets, mailbox exports, or `.env` files in this repository.
 
+If a previously connected Gmail token expires or is revoked, reauthorize it with `gog auth add you@example.com --services gmail --force-consent`.
+
 > **Classifier support today:** GNAIL currently uses Codex CLI and its ChatGPT browser authentication. Other model providers are not yet supported.
 
 ## 🌀 The triage loop
