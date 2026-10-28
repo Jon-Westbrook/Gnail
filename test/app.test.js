@@ -78,7 +78,7 @@ test('serves the local-only app without an access-code challenge', async () => {
   assert.equal(state.body.queue.length, 0);
   assert.match(html, /LET'S GET GNAIL CONNECTED/);
   assert.match(html, /codex login/);
-  assert.match(html, /gog auth setup you@example\.com --services gmail/);
+  assert.match(html, /gog auth add you@example\.com --services gmail/);
 });
 
 test('mounts behind a base path and protects API routes with an access code', async () => {
