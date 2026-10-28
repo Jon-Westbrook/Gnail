@@ -85,6 +85,13 @@ test('serves the local-only app without an access-code challenge', async () => {
   assert.match(html, /codex login --device-auth/);
 });
 
+test('works with older Gog CLIs that do not recognize the no-send safety flag', async () => {
+  const calls = await readFile(mockGogLog, 'utf8');
+  assert.match(calls, /--help/);
+  assert.match(calls, /--client default --no-input --json auth list/);
+  assert.doesNotMatch(calls, /--gmail-no-send/);
+});
+
 test('mounts behind a base path and protects API routes with an access code', async () => {
   const protectedDataDir = await mkdtemp(join(tmpdir(), 'g-nail-protected-test-'));
   const port = await freePort();
