@@ -49,6 +49,7 @@
     @media(prefers-reduced-motion:reduce){.processing-orbit,.processing-ring,.processing-core,.processing-rail span{animation:none}}
     .setup-overlay{position:fixed;z-index:90;inset:0;display:grid;place-items:center;padding:18px;background:#090910e8;backdrop-filter:blur(8px)}.setup-card{width:min(760px,100%);max-height:min(90vh,900px);overflow:auto;padding:25px;border:1px solid #f044a666;border-radius:10px;background:radial-gradient(ellipse at 15% 0%,#f044a613,transparent 48%),#101019;box-shadow:0 24px 90px #000b}.setup-card h2{margin:0 0 7px;color:var(--pink-light);font:700 22px Arial,sans-serif;letter-spacing:1px}.setup-intro,.setup-note{color:#b4aabd;font-size:13px}.setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}.setup-step{padding:15px;border:1px solid #30263a;border-radius:7px;background:#0b0a11}.setup-step h3{margin:0 0 9px;color:#eee;font:700 14px Arial,sans-serif}.setup-status{display:inline-block;margin:0 0 11px;padding:4px 8px;border:1px solid #dc718688;border-radius:20px;color:#ff9bb1;font-size:10px;letter-spacing:.5px}.setup-status.ready{border-color:#4fc8b488;color:#6ee2c8}.setup-step p{margin:8px 0;color:#b4aabd;font-size:12px}.setup-step code{display:block;overflow:auto;margin:9px 0;padding:9px;border:1px solid #30263a;border-radius:4px;background:#07070c;color:#f2c4dd;font-size:12px;white-space:pre}.setup-links{display:flex;gap:12px;flex-wrap:wrap;font-size:12px}.setup-links a{color:var(--pink-light)}.setup-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:18px}.setup-note{font-size:11px}
     @media(max-width:650px){.setup-grid{grid-template-columns:1fr}.setup-card{padding:18px}.setup-card h2{font-size:19px}}
+    .auth-card{width:min(420px,100%)}.auth-form{display:grid;gap:12px;margin-top:18px}.auth-form label{color:#b4aabd;font-size:12px}.auth-form input{width:100%;margin-top:6px;padding:11px;border:1px solid #49354e;border-radius:5px;background:#090910;color:#fff;font:inherit}.auth-error{min-height:18px;color:#ff9bb1;font-size:12px}
   </style>
   <style>@keyframes gnail-spin{to{transform:rotate(360deg)}}.processing-rail[data-determinate="true"] span{width:var(--progress);transform:none;animation:none;background:linear-gradient(90deg,#f044a6,#ff8bc9)}.processing-detail{overflow-wrap:anywhere}</style>
 </head>
@@ -77,6 +78,17 @@
     </section>
   </div>
   <div class="toast" id="toast" role="status"></div>
+  <section class="setup-overlay hidden" id="auth-overlay" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+    <div class="setup-card auth-card">
+      <h2 id="auth-title">PRIVATE GNAIL</h2>
+      <p class="setup-intro">Enter your GNAIL access code to continue.</p>
+      <form class="auth-form" id="auth-form">
+        <label for="auth-code">ACCESS CODE<input id="auth-code" type="password" autocomplete="current-password" required></label>
+        <div class="auth-error" id="auth-error" role="alert"></div>
+        <div class="setup-actions"><button class="execute" id="auth-submit" type="submit">UNLOCK GNAIL</button></div>
+      </form>
+    </div>
+  </section>
   <section class="setup-overlay hidden" id="setup-overlay" role="dialog" aria-modal="true" aria-labelledby="setup-title">
     <div class="setup-card">
       <h2 id="setup-title">LET'S GET GNAIL CONNECTED</h2>
@@ -108,11 +120,17 @@ codex login</code>
     let state = { inbox: [], queue: [], categories: [], demo: true, labelNames: [], filterSuggestions: [] };
     let activeFilter = 'ALL';
     let needsEyesQuery = '';
+    const appBasePath = window.location.pathname.replace(/\/$/, '');
+
+    function showAuth() {
+      document.getElementById('auth-overlay').classList.remove('hidden');
+      document.getElementById('auth-code').focus();
+    }
 
     async function api(path, options = {}) {
       let response;
       try {
-        response = await fetch(path, { ...options, headers: { 'Content-Type': 'application/json', ...options.headers } });
+        response = await fetch(`${appBasePath}${path}`, { ...options, credentials: 'same-origin', headers: { 'Content-Type': 'application/json', ...options.headers } });
       } catch (cause) {
         const error = new Error(cause.message || 'Could not reach the local GNAIL server');
         error.code = 'NETWORK_ERROR';
@@ -123,6 +141,7 @@ codex login</code>
         const error = new Error(body.error || `Request failed with HTTP ${response.status}`);
         error.code = body.code || (response.status === 401 ? 'AUTH_REQUIRED' : `HTTP_${response.status}`);
         error.status = response.status;
+        if (error.code === 'AUTH_REQUIRED') showAuth();
         throw error;
       }
       return body;
@@ -477,6 +496,20 @@ codex login</code>
     }));
     document.getElementById('review-queue').addEventListener('click', () => document.getElementById('queue-panel').classList.toggle('open'));
     document.getElementById('setup-button').addEventListener('click', openSetup);
+    document.getElementById('auth-form').addEventListener('submit', async event => {
+      event.preventDefault();
+      const button = document.getElementById('auth-submit');
+      const error = document.getElementById('auth-error');
+      button.disabled = true;
+      error.textContent = '';
+      try {
+        await api('/api/auth', { method: 'POST', body: JSON.stringify({ accessCode: document.getElementById('auth-code').value }) });
+        document.getElementById('auth-code').value = '';
+        document.getElementById('auth-overlay').classList.add('hidden');
+        await load();
+      } catch (cause) { error.textContent = cause.message; document.getElementById('auth-code').select(); }
+      finally { button.disabled = false; }
+    });
     document.getElementById('setup-dismiss').addEventListener('click', closeSetup);
     document.getElementById('setup-check').addEventListener('click', async event => {
       const button = event.currentTarget;
@@ -557,7 +590,7 @@ codex login</code>
       try { const result = await api('/api/demo/reset', { method: 'POST', body: '{}' }); state.inbox = result.inbox; state.queue = result.queue; render(); } catch (error) { toast(error.message); }
     });
 
-    load().catch(error => showProcessingError('GNAIL COULD NOT LOAD', error));
+    load().catch(error => { if (error.code === 'AUTH_REQUIRED') showAuth(); else showProcessingError('GNAIL COULD NOT LOAD', error); });
   </script>
 </body>
 </html>

@@ -49,6 +49,8 @@ npm start
 
 Open <http://127.0.0.1:3457>. GNAIL binds to the loopback interface by default; it is not intended to be exposed directly to the public internet.
 
+For a private reverse-proxy deployment, set `BASE_PATH` (for example `/gnail`) and `GNAIL_ACCESS_CODE` (at least 12 characters). Requests outside the configured base path return 404, and API calls require an HttpOnly session cookie after access-code login. Keep the service bound to loopback and put it behind a private network such as Tailscale; do not expose it directly to the internet.
+
 ### Keep it running on macOS
 
 After confirming the normal install works, install GNAIL as a per-user LaunchAgent:

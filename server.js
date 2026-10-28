@@ -1,5 +1,5 @@
 import express from 'express';
-import { randomUUID } from 'node:crypto';
+import { randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,6 +13,13 @@ const here = fileURLToPath(new URL('.', import.meta.url));
 const port = Number(process.env.PORT || 3457);
 const host = '127.0.0.1';
 const dataDir = process.env.GNAIL_DATA_DIR || defaultDataDirectory();
+const basePath = (() => {
+  const raw = (process.env.BASE_PATH || '').trim();
+  if (!raw || raw === '/') return '';
+  return `/${raw.replace(/^\/+|\/+$/g, '')}`;
+})();
+const accessCode = process.env.GNAIL_ACCESS_CODE || '';
+const sessions = new Set();
 const inboxPath = join(dataDir, 'inbox.jsonl');
 const queuePath = join(dataDir, 'queue.jsonl');
 const historyPath = join(dataDir, 'history.jsonl');
@@ -45,6 +52,43 @@ const demoRows = [
 let operationInProgress = false;
 let activeOperation = null;
 app.use(express.json({ limit: '128kb' }));
+
+if (process.env.BASE_PATH && !basePath) throw new Error('BASE_PATH must be a valid path');
+if (accessCode && accessCode.length < 12) throw new Error('GNAIL_ACCESS_CODE must be at least 12 characters');
+
+app.use((req, res, next) => {
+  if (!basePath) return next();
+  const pathname = req.path;
+  if (pathname === basePath) return res.redirect(308, `${basePath}/${req.url.slice(pathname.length).replace(/^\?/, '?')}`);
+  if (!pathname.startsWith(`${basePath}/`)) return res.status(404).end();
+  req.url = req.url.slice(basePath.length) || '/';
+  next();
+});
+
+function sessionCookie(req) {
+  const cookie = req.headers.cookie || '';
+  const match = cookie.match(/(?:^|;\s*)gnail_session=([a-f0-9]{64})(?:;|$)/);
+  return match?.[1] || '';
+}
+
+app.post('/api/auth', (req, res) => {
+  if (!accessCode) return res.json({ authenticated: true });
+  const supplied = typeof req.body?.accessCode === 'string' ? Buffer.from(req.body.accessCode) : Buffer.alloc(0);
+  const expected = Buffer.from(accessCode);
+  const valid = supplied.length === expected.length && timingSafeEqual(supplied, expected);
+  if (!valid) return res.status(401).json({ error: 'That access code was not accepted' });
+  const session = randomBytes(32).toString('hex');
+  sessions.add(session);
+  const cookiePath = basePath ? `${basePath}/` : '/';
+  res.setHeader('Set-Cookie', `gnail_session=${session}; Path=${cookiePath}; HttpOnly; SameSite=Strict${basePath ? '; Secure' : ''}`);
+  res.json({ authenticated: true });
+});
+
+app.use((req, res, next) => {
+  if (!accessCode || !req.path.startsWith('/api/') || req.path === '/api/auth') return next();
+  if (sessions.has(sessionCookie(req))) return next();
+  res.status(401).json({ error: 'Enter the GNAIL access code to continue', code: 'AUTH_REQUIRED' });
+});
 
 function ensureData() {
   mkdirSync(dataDir, { recursive: true, mode: 0o700 });
@@ -449,5 +493,6 @@ app.post('/api/demo/reset', (_req, res) => {
 
 app.listen(port, host, () => {
   console.log(`GNAIL running at http://${host}:${port}`);
+  if (basePath) console.log(`Base path: ${basePath}`);
   console.log(`Local data: ${dataDir}`);
 });

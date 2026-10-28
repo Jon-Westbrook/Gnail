@@ -71,7 +71,7 @@ test('serves the local-only app without an access-code challenge', async () => {
   assert.equal(state.body.classifierInstalled, true);
   assert.equal(state.body.classifierConfigured, true);
   const html = await page.text();
-  assert.doesNotMatch(html, /login-form|access-code/);
+  assert.match(html, /id="auth-form"/);
   assert.equal(state.response.status, 200);
   assert.equal(state.body.demo, true);
   assert.equal(state.body.inbox.length, 20);
@@ -79,6 +79,48 @@ test('serves the local-only app without an access-code challenge', async () => {
   assert.match(html, /LET'S GET GNAIL CONNECTED/);
   assert.match(html, /codex login/);
   assert.match(html, /gog auth setup you@example\.com --services gmail/);
+});
+
+test('mounts behind a base path and protects API routes with an access code', async () => {
+  const protectedDataDir = await mkdtemp(join(tmpdir(), 'g-nail-protected-test-'));
+  const port = await freePort();
+  const protectedUrl = `http://127.0.0.1:${port}`;
+  const protectedServer = spawn(process.execPath, ['server.js'], {
+    cwd: new URL('..', import.meta.url),
+    env: { ...process.env, PORT: String(port), BASE_PATH: '/gnail', GNAIL_ACCESS_CODE: 'test-access-code-long', GNAIL_DATA_DIR: protectedDataDir, GOG_BIN: mockGogPath, GOG_CALL_LOG: mockGogLog, CODEX_BIN: mockCodexPath },
+    stdio: 'ignore',
+  });
+  try {
+    let ready = false;
+    for (let attempt = 0; attempt < 50; attempt++) {
+      try {
+        const response = await fetch(`${protectedUrl}/gnail/`);
+        if (response.ok) { ready = true; break; }
+      } catch {}
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    assert(ready, 'protected test server should start');
+    assert.equal((await fetch(`${protectedUrl}/`)).status, 404);
+    assert.equal((await fetch(`${protectedUrl}/gnail/api/state`)).status, 401);
+
+    const rejected = await fetch(`${protectedUrl}/gnail/api/auth`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accessCode: 'wrong' }),
+    });
+    assert.equal(rejected.status, 401);
+
+    const accepted = await fetch(`${protectedUrl}/gnail/api/auth`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accessCode: 'test-access-code-long' }),
+    });
+    assert.equal(accepted.status, 200);
+    const cookie = accepted.headers.get('set-cookie').split(';')[0];
+    assert.match(accepted.headers.get('set-cookie'), /Path=\/gnail\//);
+    const state = await fetch(`${protectedUrl}/gnail/api/state`, { headers: { Cookie: cookie } });
+    assert.equal(state.status, 200);
+    assert.equal((await state.json()).demo, true);
+  } finally {
+    protectedServer.kill('SIGTERM');
+    await rm(protectedDataDir, { recursive: true, force: true });
+  }
 });
 
 test('stages archive without changing inbox, then executes it', async () => {
@@ -311,9 +353,10 @@ test('extracts a display name and sender address without confusing them', () => 
   assert.equal(senderEmail('Cobble Hill Ballet <ballet@example.test>'), 'ballet@example.test');
 });
 
-test('the local app has no password-manager login field or stale-session reload', async () => {
+test('the app has a password-manager-compatible access-code field and no stale-session reload', async () => {
   const html = await readFile(new URL('../public/index.html', import.meta.url), 'utf8');
-  assert.doesNotMatch(html, /login-form|access-code|current-password|localStorage\.getItem\('gnail-token'\)/);
+  assert.match(html, /type="password" autocomplete="current-password"/);
+  assert.doesNotMatch(html, /localStorage\.getItem\('gnail-token'\)/);
   assert.doesNotMatch(html, /location\.reload\(\)/);
 });
 
