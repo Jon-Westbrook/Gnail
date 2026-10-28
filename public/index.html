@@ -92,25 +92,29 @@
   <section class="setup-overlay hidden" id="setup-overlay" role="dialog" aria-modal="true" aria-labelledby="setup-title">
     <div class="setup-card">
       <h2 id="setup-title">LET'S GET GNAIL CONNECTED</h2>
-      <p class="setup-intro">GNAIL runs the tools on this computer. Set up an AI classifier and Gmail access in Terminal; your credentials stay with those tools, not in GNAIL.</p>
+      <p class="setup-intro">Set these up in a Terminal on the machine running GNAIL—not necessarily the computer showing this page. If GNAIL is on a server, connect to it over SSH first. Your credentials stay with Codex and Gog, not in GNAIL.</p>
       <div class="setup-grid">
         <section class="setup-step">
           <h3>01 / AI CLASSIFIER</h3>
           <span class="setup-status" id="classifier-setup-status">CHECKING CODEX…</span>
-          <p>Install OpenAI Codex CLI, then sign in with your ChatGPT account in the browser.</p>
+          <p>On the GNAIL machine, install Codex CLI (Node.js 22 or newer is required), then sign in to ChatGPT. For a headless server, use device sign-in and approve it in your browser.</p>
           <code>npm install -g @openai/codex
-codex login</code>
-          <div class="setup-links"><a href="https://github.com/openai/codex" target="_blank" rel="noreferrer">Codex install guide ↗</a></div>
+codex login
+# headless server:
+codex login --device-auth</code>
+          <div class="setup-links"><a href="https://github.com/openai/codex#readme" target="_blank" rel="noreferrer">Codex install guide ↗</a></div>
         </section>
         <section class="setup-step">
           <h3>02 / GMAIL ACCESS</h3>
           <span class="setup-status" id="gmail-setup-status">CHECKING GOG…</span>
-          <p>Install Gog CLI, configure your Google OAuth client credentials, and authorize the Gmail account you choose.</p>
-          <code>gog auth add you@example.com --services gmail</code>
-          <div class="setup-links"><a href="https://github.com/steipete/gogcli" target="_blank" rel="noreferrer">Gog install and auth guide ↗</a></div>
+          <p>First install Gog and create a Google OAuth client. Download its JSON file and place it on the GNAIL machine; then run:</p>
+          <code>gog auth credentials set /path/to/client_secret.json
+gog auth add you@example.com --services gmail</code>
+          <div class="setup-links"><a href="https://github.com/Jon-Westbrook/Gnail#first-time-gmail-setup" target="_blank" rel="noreferrer">Step-by-step setup, including servers ↗</a><a href="https://github.com/steipete/gogcli#readme" target="_blank" rel="noreferrer">Gog install guide ↗</a><a href="https://console.cloud.google.com/" target="_blank" rel="noreferrer">Google Cloud Console ↗</a></div>
+          <p>Gog opens an approval URL you can visit in your own browser. The linked guide explains the extra return step needed over SSH.</p>
         </section>
       </div>
-      <p class="setup-note">After completing setup in Terminal, return here and check again. You can dismiss this and explore synthetic demo mail at any time. GNAIL never sends email; Gmail changes only happen when you explicitly execute a reviewed queue.</p>
+      <p class="setup-note">After setup, return here and check again. You can dismiss this and explore synthetic demo mail at any time. GNAIL never sends email; Gmail changes only happen when you explicitly execute a reviewed queue.</p>
       <div class="setup-actions"><button class="secondary" id="setup-dismiss">NOT NOW — TRY DEMO</button><button class="execute" id="setup-check">CHECK CONNECTIONS</button></div>
     </div>
   </section>
@@ -269,7 +273,7 @@ codex login</code>
       classifier.textContent = state.classifierConfigured ? 'CHATGPT CONNECTED' : state.classifierInstalled ? 'CODEX FOUND · SIGN IN' : 'CODEX NOT FOUND';
       classifier.classList.toggle('ready', state.classifierConfigured);
       const gmail = document.getElementById('gmail-setup-status');
-      gmail.textContent = state.gmailConnected ? 'GMAIL CONNECTED' : state.gmailConfigured ? 'GOG READY · AUTHORIZE ACCOUNT' : 'GOG NOT CONFIGURED';
+      gmail.textContent = state.gmailConnected ? 'GMAIL CONNECTED' : state.gmailConfigured ? 'AUTHORIZE GMAIL ACCOUNT' : 'OAUTH CLIENT NEEDED';
       gmail.classList.toggle('ready', state.gmailConnected);
     }
 

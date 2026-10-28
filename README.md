@@ -31,8 +31,8 @@ Sort the pile quickly, keep the final say, and never let an agent click the butt
 
 - macOS or Linux
 - Node.js 22 or newer
-- [Gog CLI](https://github.com/steipete/gogcli) for Gmail access
-- [OpenAI Codex CLI](https://github.com/openai/codex) for classification through your ChatGPT sign-in
+
+Gog and Codex are optional until you connect Gmail. Without them, GNAIL still runs in demo mode with synthetic messages and local-only actions.
 
 GNAIL stores its local state in macOS Application Support or the Linux XDG data directory by default.
 
@@ -63,7 +63,7 @@ It starts at login and restarts after an unexpected exit. Logs are written to `~
 
 ### Connect your own Gmail and ChatGPT
 
-GNAIL invokes Gog and Codex CLI on the same machine. The first-run setup guide checks whether Gmail and ChatGPT are connected, then points you to each tool's own setup flow. It does not install tools or collect credentials.
+GNAIL invokes Gog and Codex CLI on the **same machine where the GNAIL server runs**. If you opened GNAIL from a browser but installed it on a server, run these commands in an SSH terminal on that server. The setup screen checks the connection status; it does not install tools or collect credentials.
 
 Install Codex CLI and authenticate through its browser flow:
 
@@ -72,13 +72,34 @@ npm install -g @openai/codex
 codex login
 ```
 
+On a headless server, use `codex login --device-auth`; open the displayed sign-in page on your own computer, enter the displayed code, and finish signing in to ChatGPT.
+
 Set `GOG_ACCOUNT` when Gog has no default account. `GOG_BIN`, `CODEX_BIN`, and `CODEX_MODEL` can override the executable paths or classification model; if `CODEX_MODEL` is unset, Codex uses its configured default. GNAIL uses low reasoning for fast classification by default; override it with `CODEX_REASONING_EFFORT` or adjust the three-minute limit with `CODEX_TIMEOUT_MS`.
 
 ```sh
 GOG_ACCOUNT=you@example.com npm start
 ```
 
-For the Gmail connector, create an OAuth client in your Google Cloud project, store its downloaded client credentials with `gog auth credentials set /path/to/client_secret.json`, then authorize your account with `gog auth add you@example.com --services gmail`. For the classifier, `codex login` opens the ChatGPT browser sign-in. Credentials remain under the CLI tools' own local credential stores. Do not put tokens, OAuth client secrets, mailbox exports, or `.env` files in this repository.
+For the classifier, `codex login` opens the ChatGPT browser sign-in. For Gmail, follow the first-time setup below. Credentials remain under the CLI tools' own local credential stores. Do not put tokens, OAuth client secrets, mailbox exports, or `.env` files in this repository.
+
+#### First-time Gmail setup
+
+1. In [Google Cloud Console](https://console.cloud.google.com/), select or create a project, enable the **Gmail API**, configure the OAuth consent screen, and create an OAuth client ID for a **Desktop app**. If the consent screen is in Testing mode, add the Gmail account you plan to connect as a test user. Download the client credentials JSON.
+2. Install [Gog CLI](https://github.com/steipete/gogcli#readme) on the GNAIL machine. Securely copy the downloaded JSON file to that machine, then register it:
+
+   ```sh
+   gog auth credentials set /path/to/client_secret.json
+   ```
+
+3. Authorize only Gmail access:
+
+   ```sh
+   gog auth add you@example.com --services gmail
+   ```
+
+   On a headless server, use Gog's remote flow instead: run `gog auth add you@example.com --services gmail --remote --step 1`, open the printed URL in your own browser, approve access, then pass the full redirect URL back in `gog auth add you@example.com --services gmail --remote --step 2 --auth-url 'PASTE_REDIRECT_URL_HERE'`. This is still browser OAuth; the remote option just carries the result back to Gog over SSH.
+
+4. Return to GNAIL and select **CHECK CONNECTIONS**. Connecting Gmail does not fetch mail; use **FETCH 50** only when you are ready to import and classify a batch.
 
 If a previously connected Gmail token expires or is revoked, reauthorize it with `gog auth add you@example.com --services gmail --force-consent`.
 

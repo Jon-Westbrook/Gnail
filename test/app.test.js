@@ -79,6 +79,10 @@ test('serves the local-only app without an access-code challenge', async () => {
   assert.match(html, /LET'S GET GNAIL CONNECTED/);
   assert.match(html, /codex login/);
   assert.match(html, /gog auth add you@example\.com --services gmail/);
+  assert.match(html, /machine running GNAIL—not necessarily the computer showing this page/);
+  assert.match(html, /gog auth credentials set \/path\/to\/client_secret\.json/);
+  assert.match(html, /Step-by-step setup, including servers/);
+  assert.match(html, /codex login --device-auth/);
 });
 
 test('mounts behind a base path and protects API routes with an access code', async () => {
@@ -358,6 +362,16 @@ test('the app has a password-manager-compatible access-code field and no stale-s
   assert.match(html, /type="password" autocomplete="current-password"/);
   assert.doesNotMatch(html, /localStorage\.getItem\('gnail-token'\)/);
   assert.doesNotMatch(html, /location\.reload\(\)/);
+});
+
+test('README explains the OAuth client and headless-server authorization flow', async () => {
+  const readme = await readFile(new URL('../README.md', import.meta.url), 'utf8');
+  assert.match(readme, /First-time Gmail setup/);
+  assert.match(readme, /Desktop app/);
+  assert.match(readme, /codex login --device-auth/);
+  assert.match(readme, /--remote --step 1/);
+  assert.match(readme, /--remote --step 2 --auth-url/);
+  assert.match(readme, /use \*\*FETCH 50\*\* only when you are ready/);
 });
 
 test('shows the requested caption and an accessible activity spinner for fetch and execution', async () => {
