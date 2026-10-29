@@ -8,7 +8,7 @@ import { chmod, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { applyLearnedSenderPreferences, classifyThreads } from '../lib/classifier.js';
-import { normalizeThread } from '../lib/gog.js';
+import { applyGogAction, normalizeThread } from '../lib/gog.js';
 import { labelFilterSuggestions, senderDisplayName, senderEmail } from '../lib/learning.js';
 import { defaultDataDirectory } from '../lib/paths.js';
 
@@ -76,7 +76,7 @@ test('serves the local-only app without an access-code challenge', async () => {
   assert.equal(state.body.demo, true);
   assert.equal(state.body.inbox.length, 20);
   assert.equal(state.body.queue.length, 0);
-  assert.match(html, /LET'S GET GNAIL CONNECTED/);
+  assert.match(html, /SETUP &amp; CONNECTION STATUS/);
   assert.match(html, /codex login/);
   assert.match(html, /gog auth add you@example\.com --services gmail/);
   assert.match(html, /machine running GNAIL—not necessarily the computer showing this page/);
@@ -90,6 +90,22 @@ test('works with older Gog CLIs that do not recognize the no-send safety flag', 
   assert.match(calls, /--help/);
   assert.match(calls, /--client default --no-input --json auth list/);
   assert.doesNotMatch(calls, /--gmail-no-send/);
+});
+
+test('uses Gog v0.11-compatible flags when applying a Gmail label', async () => {
+  const previousBin = process.env.GOG_BIN;
+  const previousLog = process.env.GOG_CALL_LOG;
+  process.env.GOG_BIN = mockGogPath;
+  process.env.GOG_CALL_LOG = mockGogLog;
+  try {
+    await applyGogAction({ action: 'label', threadId: 'thread-label-test', label: 'Reviewed' }, new Set(['Reviewed']));
+    const calls = await readFile(mockGogLog, 'utf8');
+    assert.match(calls, /gmail thread modify thread-label-test --add Reviewed/);
+    assert.doesNotMatch(calls, /gmail thread modify thread-label-test --add-label/);
+  } finally {
+    if (previousBin === undefined) delete process.env.GOG_BIN; else process.env.GOG_BIN = previousBin;
+    if (previousLog === undefined) delete process.env.GOG_CALL_LOG; else process.env.GOG_CALL_LOG = previousLog;
+  }
 });
 
 test('mounts behind a base path and protects API routes with an access code', async () => {

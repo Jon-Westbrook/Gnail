@@ -36,6 +36,7 @@
     .row-actions [data-action="keep"]{color:var(--neon-pink)}.row-actions [data-action="archive"]{color:var(--neon-teal)}.row-actions [data-action="trash"]{color:var(--neon-coral)}.row-actions [data-action="unsubscribe"]{color:var(--neon-violet)}
     .execute{background:var(--neon-pink);box-shadow:0 0 17px #f044a62c;color:#180b14}
     .status:not(.demo){color:var(--neon-teal);border-color:#4fc8b455}.secondary:hover{border-color:var(--neon-pink);color:var(--pink-light)}
+    .topline-actions{display:flex;align-items:center;gap:9px}.setup-link{padding:5px 8px;font-size:10px;letter-spacing:1px}
     .bottom-bar{border-color:#f044a655}.queue-panel{border-color:#9a78b877}.filter-suggestion{border-color:#9a78b855;background:linear-gradient(105deg,#9a78b80d,#10131de8 68%)}
     .filter-suggestion-text strong{color:var(--neon-pink)}
     .bulk-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px;padding:12px 15px;border:1px solid #f044a655;border-left:4px solid var(--neon-pink);border-radius:6px;background:linear-gradient(100deg,#f044a60d,#9a78b80a 55%,#10131de8);box-shadow:0 0 18px #f044a60a}
@@ -55,11 +56,11 @@
 </head>
 <body>
   <main class="shell hidden" id="app">
-    <div class="topline"><span>LOCAL MAIL OPS // <span id="mode">DEMO</span></span><span class="status demo" id="connection">SYNTHETIC DEMO</span></div>
+    <div class="topline"><span>LOCAL MAIL OPS // <span id="mode">DEMO</span></span><div class="topline-actions"><button class="secondary setup-link" id="setup-button" type="button">SETUP</button><span class="status demo" id="connection">SYNTHETIC DEMO</span></div></div>
     <div class="brand-lockup"><svg class="logo-mark" viewBox="0 0 40 40" aria-hidden="true"><path d="M6 13 20 22 34 13v17H6z" fill="none" stroke="#f044a6" stroke-width="2.5"/><path d="m23 5-9 16h7l-3 14 12-19h-7l4-11z" fill="#f5d4e6"/></svg><h1 class="brand">GNAIL</h1></div>
     <p class="subtitle">Nail those gmails to the wall!</p>
     <div id="demo-note" class="demo-note">DEMO MODE — sample subjects only. Nothing here changes Gmail.</div>
-    <nav class="controls" aria-label="Triage groups"><button class="pill active" data-filter="ALL">ALL GROUPS</button><button class="pill" data-filter="NEEDS EYES">NEEDS EYES</button><button class="pill" data-filter="ARCHIVABLE">ARCHIVABLE</button><button class="pill" data-filter="DELETABLE">DELETABLE</button><span class="spacer"></span><span class="count" id="inbox-count"></span><div class="gmail-controls"><button class="secondary" id="setup-button">SETUP</button><button class="secondary" id="connect-gmail">CONNECT GMAIL</button><button class="secondary" id="sync-gmail">FETCH 50</button></div><button class="secondary" id="review-queue">QUEUE <span id="queue-badge">0</span></button></nav>
+     <nav class="controls" aria-label="Triage groups"><button class="pill active" data-filter="ALL">ALL GROUPS</button><button class="pill" data-filter="NEEDS EYES">NEEDS EYES</button><button class="pill" data-filter="ARCHIVABLE">ARCHIVABLE</button><button class="pill" data-filter="DELETABLE">DELETABLE</button><span class="spacer"></span><span class="count" id="inbox-count"></span><div class="gmail-controls"><button class="secondary" id="connect-gmail">CONNECT GMAIL</button><button class="secondary" id="sync-gmail">FETCH 50</button></div><button class="secondary" id="review-queue">QUEUE <span id="queue-badge">0</span></button></nav>
     <div id="bulk-toolbar" class="bulk-toolbar hidden"><span class="bulk-toolbar-label"><strong id="selected-count">0</strong> selected across groups</span><select id="bulk-label" aria-label="Apply label to selected messages"><option value="">APPLY LABEL TO SELECTED…</option></select><button class="execute" id="apply-bulk-label" disabled>LABEL SELECTED</button><button class="secondary" id="clear-selection">CLEAR SELECTION</button></div>
     <div id="filter-suggestions" class="filter-suggestions"></div>
     <div class="batch" id="groups"></div>
@@ -91,7 +92,7 @@
   </section>
   <section class="setup-overlay hidden" id="setup-overlay" role="dialog" aria-modal="true" aria-labelledby="setup-title">
     <div class="setup-card">
-      <h2 id="setup-title">LET'S GET GNAIL CONNECTED</h2>
+      <h2 id="setup-title">SETUP &amp; CONNECTION STATUS</h2>
       <p class="setup-intro">Set these up in a Terminal on the machine running GNAIL—not necessarily the computer showing this page. If GNAIL is on a server, connect to it over SSH first. Your credentials stay with Codex and Gog, not in GNAIL.</p>
       <div class="setup-grid">
         <section class="setup-step">
@@ -115,7 +116,7 @@ gog auth add you@example.com --services gmail</code>
         </section>
       </div>
       <p class="setup-note">After setup, return here and check again. You can dismiss this and explore synthetic demo mail at any time. GNAIL never sends email; Gmail changes only happen when you explicitly execute a reviewed queue.</p>
-      <div class="setup-actions"><button class="secondary" id="setup-dismiss">NOT NOW — TRY DEMO</button><button class="execute" id="setup-check">CHECK CONNECTIONS</button></div>
+      <div class="setup-actions"><button class="secondary" id="setup-dismiss">CLOSE</button><button class="execute" id="setup-check">CHECK CONNECTIONS</button></div>
     </div>
   </section>
   <script>
